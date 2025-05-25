@@ -1,0 +1,121 @@
+
+\section{Viisid KL kauguse parandamiseks}
+
+\bla
+
+\subsection{Edasi-tagasi algoritm}
+\label{chapter:forw_back}
+
+Vaatleme mõõtu $q(\bm{z}) := q(z_1) \prod q(z_{k+1} | z_k)$ ning $q(\bm{y},\bm{z}) := q(\bm{z}) \prod p(y_k | z_k)$, kus $q(\bm{y}) := \sum_{z} q(\bm{y},\bm{z})$ ning $q(\bm{z}|\bm{y}) := q(\bm{y},\bm{z})/q(\bm{y})$. Tähistame fikseeritud $t$ ja fikseeritud $i < j$ korral vektoreid kui $\bm{y}_{i:j} = (y_i,\ldots,y_j)$, $\bm{y} = (y_k)_{k=1}^n$, $\vec{\bm{y}} := y_{1:t-1},\ \cev{\bm{y}} := y_{t+1:n}$ ja $ \bm{y}_{\backslash i, j} := (y_1,\ldots,y_{i-1},y_{i+1},\ldots,y_{j-1},y_{j+1},\ldots,y_n)$.
+
+Näitame, et kui $Z \sim q(\cdot | \bm{y})$, siis $Z$ on (üldiselt mittehomogeenne) Markovi ahel. Selleks kirjutame
+$$q(z_{t} | \vec{\bm{z}}, \bm{y}) = \frac{q(z_t, \cev{\bm{y}}, y_t | \vec{\bm{z}}, \vec{\bm{y}}) \ q(\vec{\bm{z}}, \vec{\bm{y}})}{q(\cev{\bm{y}}, y_t | \vec{\bm{y}}, \vec{\bm{z}}) \ q(\vec{\bm{z}}, \vec{\bm{y}})} = \frac{q(z_t, \cev{\bm{y}}, y_t | z_{t-1}, y_{t-1})}{q(\cev{\bm{y}}, y_t | z_{t-1}, y_{t-1})} = q(z_t | z_{t-1}, y_{t-1},y_t, \cev{\bm{y}}),
+$$
+kus esimeses võrduses kasutame Bayesi valemit ning teises kasutame ära seda, et tegemist on varjatud Markovi ahelaga, ning kolmandas taas Bayesi valemit.
+
+Analoogse arutelu tulemusel saame ka, et
+\begin{equation}
+    \label{eq:inhomog_markov}
+    q(z_t | z_{t-1}, \cev{\bm{y}}) = \frac{q(z_t, y_t, \cev{\bm{y}} | z_{t-1}, y_{t-1})}{q(y_t, \cev{\bm{y}} | z_{t-1}, y_{t-1})} = \frac{q(z_t, y_t, \cev{\bm{y}} | z_{t-1}, \bm{y})}{q(y_t, \cev{\bm{y}} | z_{t-1}, \bm{y})} = q(z_{t} | z_{t-1}, \bm{y}).
+\end{equation}
+
+\vspace{0.5cm}
+Järgmisena otsime skeemi $q_t(z_t | \bm{y})$ ja $q_t(z_t, z_{t+1} | \bm{y})$ arvutamiseks. Asendame $p(z_{t+1} | z_t) \mapsto q_t(z_{t+1}|z_{t})$ ja defineerime
+\begin{align*}
+    \alpha_1(z_1) &= p(z_1),& \alpha_{t}(z_{t}) := \sum_{z_{t-1}} \alpha_{t-1} (z_{t-1}) q_t(z_{t} | z_{t-1}, \bm{y}) \text{ ja} \\
+    \beta_T(z_T) &= 1,& \beta_t (z_t) := \sum_{z_{t+1}} q(z_{t+1} | z_{t}, \bm{y})\beta_{t+1} (z_{t+1}).
+\end{align*}
+
+Nüüd, et $q(\cdot | \bm{y})$ on Markovi ahel, avaldame $q_t (z_t | \bm{y})$ kui
+\begin{align} \notag
+    \sum_{ z_{\backslash t} } q(\vec{\bm{z}}, z, \cev{\bm{z}} | \bm{y}) &= \left( \sum_{z_{t-1}} \left\{ \sum_{\bm{z}_{1:t-2}} q_1(z_1 | \bm{y}) \left( \prod_{k=2}^{t-2} q_k(z_k | z_{k-1}, \bm{y}) \right) q_{t-1}(z_{t-1} | z_{t-2}, \bm{y}) \right\} q_t(z_t | z_{t-1}, \bm{y}) \right) \\
+    \notag
+    & \cdot \left( \sum_{z_{t+1}} q_{t+1}(z_{t+1} | z_t, \bm{y}) \left\{ \sum_{\bm{z}_{t+2:n}} \prod_{k=t+2}^n q_k(z_k|z_{k-1},\bm{y}) \right\} \right) \\
+    \label{eq:fb1}
+    &= \left( \sum_{z_{t-1}} \alpha_{t-1}(z_{t-1}) q_t(z_t | z_{t-1}, \bm{y}) \right) \cdot \left( \sum_{z_{t+1}} q_{t+1}(z_{t+1} | z_t, \bm{y}) \beta_{t+1}(z_{t+1}) \right)
+\end{align}
+ning näeme, et tõepoolest saame $q_t(z_t | \bm{y})$ leida edasi-tagasi algoritmi abil. Sama märkame $q_t(z_t, z_{t-1} | \bm{y})$ jaoks:
+\begin{equation}
+\begin{split}
+\notag
+    q_t (z_t,z_{t-1} | x) = \sum_{ \bm{z}_{\backslash t-1, t} } q(\bm{z} | \bm{y}) = \left( \sum_{z_{t-2}} \Big\{ \sum_{\bm{z}_{1:t-3}} q_1(z_1 | \bm{y}) \left( \prod_{k=2}^{t-3} q_k(z_k | z_{k-1}, \bm{y}) \right) \\
+    % \notag
+     q_{t-2}(z_{t-2} | z_{t-3}, x) \Big\} q_t(z_t | z_{t-2}, \bm{y}) \right) \cdot \left( \sum_{z_t} q_{t}(z_{t} | z_{t-1}, \bm{y}) \left\{ \sum_{\bm{z}_{t+1:n}} \prod_{k=t+1}^n q_k(z_k|z_{k-1},\bm{y}) \right\} \right) \\
+    \label{eq:fb2}
+    = \left( \sum_{z_{t-2}} \alpha_{t-2}(z_{t-2}) q_{t-1}(z_{t-1} | z_{t-2}, \bm{y}) \right) q_{t}(z_{t} | z_{t-1}) \left( \sum_{z_{t+1}} q_{t+1}(z_{t+1} | z_{t}, \bm{y}) \beta_{t+1}(z_{t+1}) \right).
+\end{split}
+\end{equation}
+
+\subsection{Forney stiilis graafid ja RxInfer}
+
+Kirjeldame variatsioonilist sõnumiedastuse (VMP) algoritmi ning tutvustame üht mudelit, kus variatsioonilised jaotused ei ole kaaseksponentsiaaljaotuste (\emph{conjugate exponential distributions}) perest. See erineb kirjandusest, kus edastatavateks sõnumiteks on jaotuste piisavad statistikud ja naturaalparameetrid, ning on õpetlik eeltöö VMP algoritmiga mudelile, mida kirjeldatakse peatükis \ref{section:vmp_tmc}. (Viide RxInferi tutorialitele või mingile artiklile? \bla) Samuti kirjeldame alapeatüki lõpus, kuidas uuritavat mudelit implementeerida Julia teegis RxInfer.
+
+Vaatleme varjatud tunnusega mudelit, kus 
+\begin{equation}
+    \label{eq:em_model}
+     p(p,x,y) = f_{Ber}(x | p = \hat{p}) f_{\mathcal{N}}(y-x|y=\hat{y}),
+\end{equation}
+kus $f_{Ber}$ on Bernoulli jaotus teadaoleva kaaluga $\hat{p}$ ning $f_{\mathcal{N}}$ on standardne normaaljaotus teadaoleva emissiooniga $\hat{y}$ ja kujutatakse Forney stiilis faktorgraafil \parencite{COX2019185} joonisel \ref{fig:em_model}.
+
+\begin{figure}[!ht]
+\centering
+\resizebox{0.5\textwidth}{!}{%
+\begin{circuitikz}
+\tikzstyle{every node}=[font=\LARGE]
+\draw  (1.5,18) circle (1cm) node {\LARGE $\hat{p}$} ;
+\draw  (5.25,19) rectangle  node {\LARGE $Ber$} (7.25,17);
+\draw [->, >=Stealth] (2.5,18) -- (5.25,18)node[pos=0.5,below, fill=white]{p};
+\draw  (5.25,15) rectangle  node {\LARGE $\mathcal{N}$} (7.25,13);
+\draw [->, >=Stealth] (6.25,17) -- (6.25,15)node[pos=0.5,right, fill=white]{x};
+\draw  (11,14) circle (1cm) node {\LARGE $\hat{y}$} ;
+\draw [->, >=Stealth] (7.25,14) -- (10,14)node[pos=0.5,below, fill=white]{y};
+\end{circuitikz}
+}%
+\caption{Forney stiilis graaf mudelist (\ref{eq:em_model}).}
+\label{fig:em_model}
+\end{figure}
+
+Implementeerimaks VMP algoritmi, kirjutame välja variatsioonilised jaotused igale juhuslikule suurusele:
+\begin{align*}
+    q(p) &= \delta_{\hat{p}}(p)\\
+    q(y) &= \delta_{\hat{y}}(y)\\
+    q(x) &= p_{Ber}(x),
+\end{align*}
+kus $\delta_{\hat{p}}$ on Kroneckeri ja $\delta_{\hat{y}}$ Diraci delta funktsioon. Et eelduse kohaselt on $\hat{p}$ ja $\hat{y}$ fikseeritud, siis ainuke jaotus, mida VMP algoritm parandab on $q(x)$. 
+
+Järgmiseks leiame veel normaliseerimata variatsioonilised sõnumid
+\begin{align*}
+    \ln \vec{\nu}(x) &\sim \ln \vec{\eta}(x) := q(p)\ln f_{Ber}(x | p) = \ln f_{Ber}(x | \hat{p}) = x \ln \hat{p} + (1-x) \ln (1-\hat{p})\\
+    \ln \cev{\nu}(x) &\sim \ln \cev{\eta}(x) := q(y)f_{\mathcal{N}}(y - x) = \ln f_{\mathcal{N}}(\hat{y} - x).
+\end{align*}
+Nüüd saame kirjutada
+
+$$q(x) = \frac{1}{Z} \vec{\eta}(x) \cev{\eta}(x),$$
+kus $Z = \vec{\eta}(0) \cev{\eta}(0) + \vec{\eta}(1) \cev{\eta}(1)$. 
+
+Funktsionaali, mida RxInfer kasutab variatsiooniliste jaotuste headuse mõõtmiseks, nimetatakse Bethe vabaenergiaks üle faktorite $\mathcal{V}$ ja servade $\mathcal{E}$
+\begin{equation}
+    \label{eq:bethe}
+    F[q,f] = - \sum_{a \in \mathcal{V}} {H[q_a(s_a)]} - \sum_{a \in \mathcal{V}}{\left< \ln f_a(s_a) \right>_{q_{a}(s_a)}} + \sum_{i \in \mathcal{E}}{H[q_i(s_i)]},
+\end{equation}
+kus variatsioonilist mõõtu $q_a(s_a)$ nimetatakse ühismarginaaliks üle tipu $f_a$. Mudeli (\ref{eq:em_model}) jaoks on $q_a(s_a)$ jaotused vastavalt
+\begin{align*}
+    q(p, x) &= \vec{\nu}(p) f_{Ber}(x | p) \cev{\nu}(x) \text{ ja}\\
+    q(x, y) &= \vec{\nu}(x)f_{\mathcal{N}}(y - x)\cev{\nu}(y).
+\end{align*}
+
+Et $q(p) = \delta_{\hat{p}}(p)$ ja $q(y) = \delta_{\hat{y}}(y)$ on punktmassid, siis ühismarginaalid saab faktoriseerida kui $q(p, x) = q(p)q(x)$ ja $q(x, y) = q(x)q(y)$. (lihtne miks? \bla) Saame
+\begin{align*}
+    q(p,x) &= q(p)q(x) = \delta_{\hat{p}}(p) f_{\mathcal{N}}(\hat{y} -x) f_{Ber}(x | p)\\
+    q(x,y) &= q(x)q(y) = \delta_{\hat{y}}(y) f_{\mathcal{N}}(y -x) f_{Ber}(x | \hat{p}).
+\end{align*}
+Nüüd saame kirjutada energia keskväärtuse mõlema faktori $f_{\mathcal{N}}, f_{Ber}$ jaoks kui
+\begin{align*}
+    -\left< E_{Ber}(x | p) \right>_{q(x)q(p)} &= q_x(0)\ln (1-\hat{p}) + q_x(1) \ln \hat{p}\\
+    -\left< E_{\mathcal{N}}(y - x) \right>_{q(x)q(y)} &= q(x) \left( \ln f_{\mathcal{N}}(\hat{y}-x) \right) =  -\frac{1}{2}\ln(2\pi) - q_x(0) \frac{(\hat{y})^2}{2} - q_x(1)\frac{(\hat{y-1})^2}{2}.
+\end{align*}
+
+Et Bernoulli faktor on RxInferi teegis juba implementeeritud, piisab emissiooni faktori defineerimisest. Faktor ja mudel on Julias defineeritud
+\hyperref[section:lisa1]{esimeses lisas}. Et ainus muutus on jaotuses $q_x$, koondub protsess esimesel iteratsioonil.
+
+

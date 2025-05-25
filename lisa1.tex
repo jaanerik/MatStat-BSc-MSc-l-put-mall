@@ -1,0 +1,47 @@
+\section*{Lisa 1. RxInfer kood lihtsa mudeli defineerimiseks} 
+\label{section:lisa1}
+\addcontentsline{toc}{section}{Lisa 1. RxInfer kood lihtsa mudeli defineerimiseks} 
+
+\begin{minted}{julia}
+using RxInfer
+using Distributions
+using GraphViz
+
+struct EmissionNode{T <: Real} <: DiscreteUnivariateDistribution
+    x :: T
+end
+
+@node EmissionNode Stochastic [out, x]
+@rule EmissionNode(:out, Marginalisation) (q_x :: Bernoulli,) = PointMass(y)
+@rule EmissionNode(:x, Marginalisation) (q_out :: PointMass,) = begin
+    tmpx0 = pdf(Normal(0,1), q_out.point)
+    tmpx1 = pdf(Normal(0,1), q_out.point-1)
+    p = tmpx1/(tmpx0+tmpx1)
+    return Bernoulli(p)
+end
+@marginalrule EmissionNode(:out_x) (q_out::PointMass, q_x::Bernoulli) = begin
+    tmpn0 = pdf(Normal(0,1), q_out.point)
+    tmpn1 = pdf(Normal(0,1), q_out.point-1)
+    tmpp1 = q_x.p
+    tmpp0 = 1-tmpp1  
+    Z = tmpn0*tmpp0 + tmpn1 * tmpp1
+    p = tmpn1 * tmpp1 / Z
+    return (out = q_out, x = Bernoulli(p))
+end
+
+@average_energy EmissionNode (q_out::PointMass, q_x::Bernoulli) = begin
+    -1/2 * log(2 * π) - q_x.p/2 * (q_out.point-1)^2 - (1-q_x.p)/2*q_out.point^2
+end
+
+@model function my_model(y)
+    x ~ Bernoulli(0.75)
+    y ~ EmissionNode(x)
+end
+a = infer(
+    model = my_model(),
+    data = (y = 1.0,),
+    options = (limit_stack_depth = 500,),
+    free_energy = true,
+    iterations = 2,    
+)
+\end{minted}

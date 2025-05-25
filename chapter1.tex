@@ -1,0 +1,205 @@
+\section{Variatsioonilised Bayesi meetodid Viterbi raja lähendamiseks}
+
+\subsection{Paarikaupa ja kolmekaupa Markovi ahelad}
+
+Et paarikaupa ja kolmekaupa Markovi ahelate omadusi on varasemalt uuritud palju \parencite{Soop.2023}, \parencite{Avans.2021}, \bla, siis toome välja vaid definitsioonid.
+
+Olgu $(\mathcal{U},\sigma_u,\mu_u)$ ja $(\mathcal{X},\sigma_x,\mu_x)$ mõõduga ruumid. Hulgal $\mathcal{Z} \subseteq \mathcal{U} \times \mathcal{X}$, korrutis-$\sigma$ algebraga $\mathcal{B}(\mathcal{Z}) = \sigma_u \otimes \sigma_x$ ning korrutistõenäosusmõõduga $\mu_z = \mu_u \times \mu_x$ defineeritud homogeenset Markovi ahelat nimetatakse \textbf{paarikaupa Markovi ahelaks} (PMM).
+
+Kui nüüd vaadelda eelnevatele mõõduga ruumidele lisaks veel tõenäosusruumi $(\mathcal{Y},\sigma_y,\mu_y)$, siis defineerime kolmekaupa Markovi ahela kui homogeense Markovi ahela tõenäosusruumil $(\mathcal{W}, \mathcal{B}(\mathcal{W}),\mu_w)$, kus $\mathcal{W} \subseteq \mathcal{U} \times \mathcal{X} \times \mathcal{Y}$, $\mathcal{B}(\mathcal{W}) := \sigma_u \otimes \sigma_x \otimes \sigma_y$ ja $\mu_w := \mu_u \times \mu_x \times \mu_y$.
+
+Töös vaatleme vaid mudeleid üle lõplike $\mathcal{X},\mathcal{U}$ tähestike ehk diskreetsete $\sigma_u, \sigma_x$ algebrate ja loendavate mõõtudega, kuid viimane $\sigma_y$ võib olla suvaline.
+
+
+\subsection{Mudeli ja probleemi kirjeldus}
+
+Olgu meil vaatlusandmeid kirjeldav juhuslik suurus $\bm{Y} \in \mathcal{Y}^T$ ning meid huvitavaid varjatud tunnuseid kirjeldav juhuslik suurus $\bm{X} \in \mathcal{X}^T$ ning loeme segavaks parameetriks juhusliku suuruse $\bm{U} \in \mathcal{U}^T$. Olgu teada homogeense kolmekordse Markovi ahela üleminekujaotus $P(u_k, x_k, y_k | u_{k-1}, x_{k-1}, y_{k-1})$ ning $P(u_1, x_1, y_1)$ iga $u_1 \in \mathcal{U}, x_1 \in \mathcal{X}, y_1 \in \mathcal{Y}$ jaoks. Saab näidata (peatükk \ref{chapter:forw_back}, valem \ref{eq:inhomog_markov}), et fikseeritud $\bm{y}$ korral $P(u_k, x_k | u_{k-1}, x_{k-1}) := P(u_k, x_k | u_{k-1}, x_{k-1}, \bm{y})$ on tegu mittehomogeense Markovi ahelaga.
+    
+Ülesandeks on leida $\bm{x} \in \mathcal{X}^T$, mis saavutab maksimumi suuruse 
+$$\sum_{\bm{u} \in \mathcal{U}^T}{P(\bm{x}, \bm{u} | \bm{y})}$$
+jaoks, kusjuures sellist $\mathbf{x}$ nimetatakse \textbf{Viterbi rajaks}. On võimalik näidata \parencite{LYNGSO2002545}, et see on NP raske ülesanne. Viterbi raja lähendamiseks kirjeldame variatsioonilisi meetodeid. Töö koosneb kahe algoritmi kirjeldamisest.
+\begin{enumerate}
+    \item Esimeses \emph{belief propagation} (BP) algoritmis leiame tõenäosusmõõdu $Q(\bm{u}, \bm{x}) = Q(\bm{x})Q(\bm{u})$, mis oleks hea lähend jaotusele $P(\bm{u},\bm{x} | \bm{y})$ KL kauguse mõttes, ning seejärel kasutame Viterbi algoritmi üle mõõdu $Q(\bm{x})$, et saada Viterbi raja hinnang $\bm{x}^*$.
+    \item Teises \emph{variational message passing} (VMP) algoritmis nõuame ajalist sõltumatust tõenäosusmõõdus $Q(\bm{u}, \bm{x}) = \prod_{t=1}^T Q(x_t,u_t)$ ning samuti minimiseerime KL kaugust jaotuse $P(\bm{u},\bm{x} | \bm{y})$ suhtes. Viterbi raja lähendi leiame $x_t^* = \argmax_{x_t} \sum_{u_t} Q(x_t,u_t)$ abil iga $t$ korral.
+\end{enumerate}
+
+KL kauguse kuju on
+$$KL[Q(\bm{u}, \bm{x}) \ ||\ P(\bm{u}, \bm{x} | \bm{y})] = \sum_{\bm{x} \in \mathcal{X}^T, \bm{u} \in \mathcal{U}^T} Q(\bm{u}, \bm{x}) \ln \frac{Q(\bm{u}, \bm{x})}{P(\bm{u}, \bm{x} | \bm{y})}.$$
+Selline ebatavaline Kullback Leibler kauguse kuju, kus optimiseeritav jaotus on hoopis esimene argument, on tähtis, et meetod oleks arvutuslikult efektiivne. Viimane eeldus mängib rolli \bla. Et me otsime vaid Viterbi raja lähendit, siis kõrvalpõikena uurime, kas seda saab lahendada efektiivsemalt ilma normaliseerimiseta, ehk kas $Q(\bm{u})$ ja $Q(\bm{x})$ võivad olla esimeses algoritmis arbitraarsemad lõplikud mõõdud. 
+
+Edasi kirjutame 
+\begin{align}
+    \label{eq:kl}
+    KL[Q(\bm{u}, \bm{x}) \ ||\ P(\bm{u}, \bm{x} | \bm{y})] &= - \sum_{\bm{u}, \bm{x}} Q(\bm{u}, \bm{x}) \left( \ln \frac{P(\bm{u}, \bm{x}, \bm{y})}{Q(\bm{u}, \bm{x})} - \ln P(\bm{y}) \right) \\
+    \nonumber
+    &= - \sum_{\bm{u}, \bm{x}} \left( Q(\bm{u}, \bm{x}) \ln \frac{P(\bm{u}, \bm{x}, \bm{y})}{Q(\bm{u}, \bm{x})}\right) - \ln P(\bm{y}).
+\end{align}
+
+Defineerime nüüd
+\begin{equation}
+\label{eq:elbo}
+L[Q(\bm{u}, \bm{x})] = \sum_{\bm{u}, \bm{x}} \left( Q(\bm{u}, \bm{x}) \ln \frac{P(\bm{u}, \bm{x}, \bm{y})}{Q(\bm{u}, \bm{x})}\right)
+\end{equation}
+
+ning saame, et KL kauguse $KL[Q(\bm{u}, \bm{x}) || P(\bm{u}, \bm{x} | \bm{y})] = -L[Q(\bm{u}, \bm{x})] + \ln P(\bm{u}, \bm{x})$ minimiseerimiseks peame maksimiseerima suurust $L$, mille ingliskeelne lühend ELBO vastab mõistele \textit{evidence lower bound}. Kirjanduses kasutatakse ka mõistet \textit{variational free energy} sümboliga $F[Q, \bm{y}] := -L[Q, \bm{y}]$ \parencite{Parr.2019}. Funktsionaali L optimiseerimine võimaldab meil olla arvutuslikult efektiivsem, sest näiteks TMM mudelite puhul 
+$$\ln P(\bm{u}, \bm{x}, \bm{y}) = \ln P(u_1, x_1, y_1) + \sum_{t=2}^T \ln P(u_t, x_t, y_t | u_{t-1}, x_{t-1}, y_{t-1})$$
+on iga liidetav kergesti leitav, aga $\ln P(\mathbf{y})$ ei ole.
+
+Avaldame fikseeritud $\bm{y} \in \mathcal{Y}^T$ jaoks
+\begin{align}
+    \label{eq:elbo1}
+    L[Q(\bm{u}, \bm{x})] &=\sum_{\bm{u}, \bm{x}} Q(\bm{u}, \bm{x}) \ln P(\bm{u}, \bm{x}, \bm{y}) - \sum_{\bm{u}, \bm{x}} Q(\bm{u}, \bm{x}) \ln Q(\bm{u}, \bm{x})\\
+    \label{eq:elbo2}
+    &= \left< E(\bm{u}, \bm{x},\bm{y}) \right>_{Q(\bm{u}, \bm{x})} + H(Q(\bm{u}, \bm{x})),
+\end{align}
+kus suurust $E = \ln P$ kutsutakse energiaks ning $H$ on Shannoni entroopia. Edaspidi kasutame ebatavaliselt keskväärtuse tähistust $\left<  \cdot \right>$ ka mõõtude puhul, mis ei pruugi olla tõenäosusmõõdud, nagu on seda tehtud teistes töödes \parencite{Parr.2019}. ELBO (\ref{eq:elbo2}) on töös kesksel kohal maksimiseeritav väärtus.
+
+\subsection{Variatsiooniline meetod mõõdu parandamiseks}
+
+Vaatleme siinkohal sõltumatuid diskreetseid jaotusi $Q(c),Q(d)$ üle tähestike $\mathcal{C}, \mathcal{D}$, mis üldistavad kahes algoritmis kirjeldatavaid jaotusi $Q(\mathbf{u}),Q(\mathbf{x})$ ja $Q(w_t):=Q_t(u_t,x_t),Q(w_{t-1}):=Q_{t-1}(u_{t-1},x_{t-1})$. Muud jaotused, kui neid eksisteerib, loeme fikseerituks ning jaotustest $Q(c), Q(d)$ sõltumatuteks. Uuritavad juhuslikud suurused olgu üksteise Markovi ümbrustes (\textit{Markov boundary}), kus Markovi ümbrus $b$ juhuslikule suurusele $c$ on defineeritud \parencite{Parr.2022} iga mudelis leiduva juhusliku suuruse $s$ jaoks kui minimaalne selline hulk, mis tagab
+\begin{equation}
+    \label{eq:markov_blanket}
+    p(c,s|b) = p(c|b)p(s|b).
+\end{equation}
+
+Saame sõltumatuse põhjal, et suuruse ELBO (\ref{eq:elbo2}) maksimiseerimine on samaväärne järgmise suuruse maksimiseerimisega
+\begin{equation}
+    \label{eq:tilde_elbo}
+    \Tilde{L}[Q(d, c)] = \sum_{d, c}  Q(c) Q(d) E(d, c, y) - \sum_{c, d} Q(d) Q(c) \Big(\ln Q(d) + \ln Q(c) \Big)
+\end{equation}
+ning vaadeldes (\ref{eq:elbo2}) entroopiat avaldame
+\begin{align*}
+    \sum_{d, c} Q(d) Q(c) \Big(\ln Q(d) + \ln Q(c) \Big) &= \sum_{d, c} Q(d) Q(c) \ln Q(d) + \sum_{d, c} Q(d) Q(c) \ln Q(c) \\
+    &= C \sum_{d} Q(d)  \ln Q(d) + D \sum_{c} Q(c)  \ln Q(c),
+\end{align*}
+kus $C$ ja $D$ on vastavalt $Q(c)$ ja $Q(d)$ normid.
+
+Järgmisena vaatleme (\ref{eq:tilde_elbo}) energia keskväärtust, saame
+\begin{align*}
+     \sum_{d, c} Q(d) Q(c) E(d, c, y) & =  \sum_{c} Q(c) \sum_{d} Q(d) E(d, c, y) \\
+    & = \sum_{c} Q(c) \left< E(d, c, y) \right>_{Q(d)} \\
+    & = \sum_{c} Q(c) \ln \exp \left< E(d, c, y) \right>_{Q(d)} \\
+    & =  \sum_{c} Q(c) \ln Q^*(c)
+\end{align*}
+ja sümmeetria põhjal $\sum_{d, c} Q(d) Q(c) E(d, c, y) =  \sum_{d} Q(d) \ln Q^*(d) $
+kus $Q^*(c) := \exp \left< E(d, c, y) \right>_{Q(d)}$ ja $Q^*(d) := \exp \left< E(c, d, y) \right>_{Q(c)}$. 
+
+Asendame saadud tulemused tagasi valemisse (\ref{eq:tilde_elbo})
+\begin{align*}
+     \Tilde{L}[Q(y)] &=  \sum_{c} Q(c) \ln Q^*(c) - C \sum_{d} Q(d)  \ln Q(d) - D \sum_{c} Q(c)  \ln Q(c)\\
+     &= \sum_{d} Q(d) \ln Q^*(d) - C \sum_{d} Q(d)  \ln Q(d) - D \sum_{c} Q(c)  \ln Q(c)
+\end{align*}
+Pannes tähele, et $H(Q(d, c)) = C H(Q(d)) + D H(Q(c))$, saame kirjutada
+\begin{equation*}
+\Tilde{L}[Q(d, c)]= \left\{ \sum_{c} Q(c) \ln Q^*(c) - D \cdot \sum_{c} Q(c) \ln Q(c) \right\} + C \cdot H [Q(d)] .    
+\end{equation*}
+Et $Q(d)$ ja $Q(c)$ on $C = 1/D$ kitsenduse korral ka sõltumatud, uurime edaspidi vaid loogeliste sulgude sisu ja kirjutame
+\begin{align*}
+\sum_{c} Q(c) \ln Q^*(c) - \sum_{c} Q(c) \ln Q(c)^D & =\sum_{c} Q(c) \ln \frac{Q^*(c)}{Q(c)^D}.
+\end{align*}
+
+Nüüd fikseerime $D$ ning maksimeerime suurust $L$ üle võimalike mõõtude $Q(c)$ nii, et $DC = 1$. Paneme tähele, et
+$$\Omega := \left\{  Q(c) \ | \ Q(c) > 0\ \forall c,\ \sum_{c} Q(c) = 1/D\right\}$$
+moodustavad lõplikumõõtmelises ruumis kumera ja kompaktse alamruumi. Oletame, et maksimum saavutatakse selle alamruumi sisepunktis.
+
+Kirjutame Lagrange'i funktsionaali
+$$
+\mathcal{L}(Q_{c},\lambda) = \sum_{c} Q(c) \ln \frac{Q^*(c)}{Q(c)^D} + \lambda\left(\sum_{c} Q(c) - \frac{1}{D}\right).
+$$
+
+Leiame nüüd funktsionaalse tuletise, olgu $\eta(c) \in \Omega$ suvaline. Kirjutame
+$$
+\frac{d}{d\varepsilon}\Big\vert_{\varepsilon=0} \left[\sum_{c} (Q(c)+     \varepsilon \eta(c)) \ln \frac{Q^*(c)}{(Q(c)+\varepsilon \eta(c))^D} + \lambda\left(\sum_{c} (Q(c)+\varepsilon \eta(c)) - \frac{1}{D}\right)\right].
+$$
+
+Nüüd optimaalse juhtimise teoorias on tavaks \parencite{lellep2013} kirjutada eelmine avaldis kujul
+$$
+\frac{d}{d\varepsilon}\Big\vert_{\varepsilon=0} \left[\sum_{c}F(c, y)\right],
+$$
+kus $y = Q(c) + \varepsilon \eta(c)$ ning
+$$
+F(c,y) = y \ln \frac{Q^*(c)}{y^D} + \lambda\left(y - \frac{1}{D\vert\mathcal{C}^T\vert}\right).
+$$
+
+Nüüd paneme tähele, et 
+$$\frac{dF}{d Q_{c}} = \frac{dF}{d \varepsilon}\Big\vert_{\varepsilon=0} = \frac{dF}{dy} \frac{dy}{d\varepsilon}\Big\vert_{\varepsilon=0} = \frac{dF}{dy} \Big\vert_{\varepsilon=0} \eta. $$
+
+Ekstreemumpunkti tarviliku tingimuse kohaselt peab iga $\eta(c) \in \Omega$ rahuldama 
+$$\sum_{c} \frac{dF}{dQ_{c}} \eta = 0,$$
+kus $0$ on nullfunktsioon. Saab näidata, et samaväärselt peab olema rahuldatud $\frac{dF}{dQ_{c}} = 0$.
+
+Saame süsteemi
+$$\begin{cases}
+\frac{dF}{dQ} = \ln Q^* - D \ln Q - D + \lambda = 0\\
+\sum_{c} Q(c) = \frac{1}{D}
+\end{cases},$$
+mille lahend on
+\begin{equation}
+    \label{eq:lambda}
+    \ln Q(c) = \frac{\ln Q^*(c) - D + \lambda}{D} = \frac{\ln Q^*(c)}{D} - 1 + \lambda/D
+\end{equation}
+ning et
+$$
+    \exp\left[-1 + \lambda/D \right] \sum_{c} \exp \left[\frac{\ln Q^*(c)}{D}\right] = 1/D,
+$$ siis
+$$\lambda = D - D \ln \left[ D \sum_{c} \exp \left[\frac{\ln Q^*(c)}{D}\right] \right]$$
+ning asendades selle võrrandisse (\ref{eq:lambda}) saame nüüd iteratsiooni esimeseks osaks
+$$ \ln Q^{(2)}(c) = \frac{\ln Q^*(c)}{D} - \ln \left[ D \sum_{c} \exp \left[\frac{\ln Q^*(c)}{D}\right] \right]$$
+ehk
+
+\begin{equation}
+    \label{eq:em1}
+    Q^{(2)}(c) = \frac{Q^*(c)^{1/D}}{D \sum_{\Tilde{c}} \exp \left[\frac{\ln Q^*(\Tilde{c})}{D}\right]}= \frac{\exp \frac{\ln Q^*(c)}{D}}{D \sum_{\Tilde{c}} \exp \left[\frac{\ln Q^*(\Tilde{c})}{D}\right]} = \frac{Q^*(c)^{1/D}}{D \sum_{\Tilde{c}} Q^*(\Tilde{c})^{1/D}}.
+\end{equation}
+
+Analoogselt saame
+$$
+\Tilde{L}[Q(d, c)]= \left\{ \sum_{d} Q(d) \ln Q^*(d) - C \cdot \sum_{d} Q(d) \ln Q(d) \right\} -  D \cdot \sum_{c} Q(c) \ln Q(c) .
+$$
+jaoks iteratsiooni teiseks osaks
+\begin{equation}
+    \label{eq:em2}
+    Q^{(2)}(d) = \frac{D Q^{*}_{(2)}(d)^{D}}{ \sum_{\Tilde{d}} \exp \left[D \ln Q^{*}_{(2)}(\Tilde{d})\right]}= \frac{D \exp \left[ D \ln Q^{*}_{(2)}(d) \right]}{ \sum_{\Tilde{d}} \exp \left[D \ln Q^{*}_{(2)}(\Tilde{d})\right]} = \frac{D Q^{*}_{(2)}(d)^D}{\sum_{\Tilde{d}} Q^{*}_{(2)}(\Tilde{d})^D},
+\end{equation}
+kus
+$$Q^{*}_{(2)}(d) = \exp \left< E(c, d, y) \right>_{Q^{(2)}(c)}.$$
+
+Nüüd näitame, et $c^*, c \in \mathcal{C}^T$ korral peale samme (\ref{eq:em1}) ja (\ref{eq:em2}) $c^*$ on Viterbi rada suvalise $D > 0$ jaoks parajasti siis, kui peale neid samu samme on $c^*$ Viterbi rada $D = 1$ korral. Selleks uurime analoogset olukorda, kus enne on tehtud samm (\ref{eq:em2}) ja pärast (\ref{eq:em1}) ja näitame, et 
+\begin{equation}
+    \label{ineq:q}
+     Q^{(2)}(c^*) \ge Q^{(2)}(c)
+\end{equation} parajasti siis, kui $Q^{(2)}_{\text{norm}}(c^*) \ge Q^{(2)}_{\text{norm}}(c)$, kus $Q^{(2)}_{\text{norm}}(c)$ jaoks on fikseeritud $D=1$.
+
+Kirjutame (\ref{ineq:q}) jaoks
+\begin{align*}
+    Q^{(2)}(c^*) \ge Q^{(2)}(c) &\Longleftrightarrow \frac{Q^{*}_{(2)}(c^*)^{1/D}}{D \sum_{\Tilde{c}} Q^{*}_{(2)}(\Tilde{c})^{1/D}} \ge \frac{Q^{*}_{(2)}(c)^{1/D}}{D \sum_{\Tilde{c}} Q^{*}_{(2)}(\Tilde{c})^{1/D}} \\
+     &\Longleftrightarrow Q^{*}_{(2)}(c^*) \ge Q^{*}_{(2)}(c) \\
+     &\Longleftrightarrow \left<E(c^*,d,y) \right>_{Q^{(2)}(d)} \ge \left<E(c,d,y) \right>_{Q^{(2)}(d)} \\
+     &\Longleftrightarrow \sum_{d} \frac{D Q^*(d)^D}{\sum_{\Tilde{d}} Q^*(\Tilde{d})^D} \ln P(c^*, d, y) \ge \sum_{d} \frac{D Q^*(d)^D}{\sum_{\Tilde{d}} Q^*(\Tilde{d})^D} \ln P(c, d, y) \\
+     &\Longleftrightarrow \sum_{d} \frac{Q^*(d)^D}{\sum_{\Tilde{d}} Q^*(\Tilde{d})^D} \ln P(c^*, d, y) \ge \sum_{d} \frac{Q^*(d)^D}{\sum_{\Tilde{d}} Q^*(\Tilde{d})^D} \ln P(c, d, y) \\
+\end{align*}
+
+Kirjutame $Q_{\text{norm}}(u)$ jaoks $Q_{\text{norm}}(u) = 1/D \cdot Q(u)$ ja $Q_{\text{norm}}(x) = D \cdot Q(x)$. Nüüd
+$$
+\sum_{d} \frac{Q_{\text{norm}}^*(d)}{\sum_{\Tilde{u}} Q_{\text{norm}}^*(\Tilde{u})} \ln \frac{P(c^*, d, y)}{P(c, d, y)} \ge 0,
+$$
+kus $Q_{\text{norm}}^*(d) = \exp \left<E(c,d,y) \right>_{Q_{\text{norm}}(x)} = Q^*(d)^{D}.$ Seepärast
+
+\begin{align*}
+    \sum_{d} \frac{Q^*(d)^D}{\sum_{\Tilde{u}} Q^*(\Tilde{u})^D} \ln P(c^*, d, y) \ge \sum_{d} \frac{Q^*(d)^D}{\sum_{\Tilde{u}} Q^*(\Tilde{u})^D} \ln P(c, d, y) &\Longleftrightarrow \\
+    \sum_{d} \frac{Q_{\text{norm}}^*(d)}{\sum_{\Tilde{u}} Q_{\text{norm}}^*(\Tilde{u})} \ln P(c^*, d, y) \ge \sum_{d} \frac{Q_{\text{norm}}^*(d)}{\sum_{\Tilde{u}} Q_{\text{norm}}^*(\Tilde{u})} \ln P(c, d, y) &\Longleftrightarrow \\
+    \left<E(c^*,d,y) \right>_{Q_{\text{norm}}^{(2)}(d)} \ge \left<E(c,d,y) \right>_{Q_{\text{norm}}^{(2)}(d)} &\Longleftrightarrow \\
+    Q^{*}_{(2)\text{norm}}(c^*) \ge Q^{*}_{(2)\text{norm}} (c) &\Longleftrightarrow \\
+    \frac{Q^{*}_{(2)\text{norm}}(c^*)}{ \sum_{\Tilde{x}} Q^{*}_{(2)\text{norm}}(\Tilde{x})} \ge \frac{Q^{*}_{(2)\text{norm}}(c)}{\sum_{\Tilde{x}} Q^{*}_{(2)\text{norm}}(\Tilde{x})} &\Longleftrightarrow Q^{(2)}_{\text{norm}}(c^*) \ge Q^{(2)}_{\text{norm}}(c) 
+\end{align*}
+
+
+Oleme näidanud, et $D$ muutmine ei muuda radade järjestust. Veel enam, meil on vabadus valida arbitraarne $D$, mispärast võime defineerida uue mõõdu $P$, kus $P^{(2)}(c) = P^*(c)$ ning $P^{(2)}(d) = P^*_{(2)}(d)$, sest jaotuse kaale konstandiga korrutamine Viterbi rada ei muuda.
+
+\
+
+\
+
+Järgmisena uurime, kas iteratsioonide (\ref{eq:em1}), (\ref{eq:em2}) tulemusena ELBO (\ref{eq:elbo1}) ka koondub. Meenutame, et ELBO (\ref{eq:elbo1}) maksimiseerimine on samaväärne KL kauguse (\ref{eq:kl}) minimiseerimisega. Et KL kaugus on teatavasti positiivne, siis on iteratsioonide tulemusena saadav ELBO jada ülalt tõkestatud. Et KL kaugus on kaalude suhtes pidev, piisab nüüd koondumiseks veenduda, et ELBO iga iteratsiooni tulemusena ei suurene, sest iteratsioonid moodustavad monotoonselt mittekahaneva tõkestatud jada. Et iteratsiooni tulemusel saadud jaotus on ühene, siis lõpptulemus koondub. Saadud tulemus võib olla üldiselt sadupunkt.
+
+\bla

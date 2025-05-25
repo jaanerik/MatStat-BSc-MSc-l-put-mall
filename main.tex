@@ -1,0 +1,98 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[T1]{fontenc}	% For use with pdflatex
+\usepackage[utf8]{inputenc} % For use with pdflatex
+% \usepackage[english]{babel} % Ingliskeelne lõputöö
+\usepackage[estonian]{babel} % Eestikeelne lõputöö
+
+\usepackage{setspace}
+\setstretch{1.5}
+\usepackage{amsmath,amsthm,amsfonts}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue,filecolor=black]{hyperref}
+\setlength{\parindent}{0pt} \setlength{\parskip 5pt plus 2pt minus 1pt} \frenchspacing
+
+\usepackage{amsmath,amsthm,amssymb,amsfonts, fancyhdr, color, comment, graphicx, environ}
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage{nicematrix}
+\usepackage[shortlabels]{enumitem}
+\usepackage{indentfirst}
+\usepackage{hyperref}
+\usepackage[nottoc]{tocbibind}
+\usepackage{bm}
+\usepackage[estonian]{babel}
+\usepackage{breqn}
+\usepackage{mathtools}
+\usepackage{circuitikz}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{geometry}
+\usepackage{tabularray}
+\UseTblrLibrary{booktabs, siunitx}  
+
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
+\usepackage{minted}
+
+\newtheorem{theorem}{Teoreem}
+\newtheorem{corollary}{Järeldus}[theorem]
+\theoremstyle{definition}
+\newtheorem{definition}{Definitsioon}
+
+\newcommand{\bla}{\textcolor{red}{BLA BLA BLA...}} 
+\newcommand{\cev}[1]{\reflectbox{\ensuremath{\vec{\reflectbox{\ensuremath{#1}}}}}}
+\newcommand\myeq{\stackrel{\mathclap{\normalfont\mbox{\small{*}}}}{=}}
+\newcommand{\BibResources}{references}
+
+\DeclareMathOperator*{\esssup}{ess\,sup}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+% Viitesüsteem
+\usepackage[citestyle=authoryear,natbib=true,backend=bibtex, maxbibnames=99, bibstyle=authoryear]{biblatex}
+\addbibresource{bibliography.bib}
+
+\title{Kolmekordsete Markovi ahelate MAP raja lähendamine variatsiooniliste meetoditega}
+\author{Jaan Erik Pihel}
+\numberwithin{equation}{section}
+\begin{document}
+
+\renewcommand{\figurename}{Joonis}
+\renewcommand{\tablename}{Tabel}
+
+% Tiitelleht
+\include{00_titlepage}
+
+% Lehekülgede nummerdamine
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% Lühikokkuvõtted (eesti ja inglise keeles)
+\include{01_abstract}
+% Sisukord
+\tableofcontents
+% Töö struktuur, kus iga osa on eraldi .tex fail
+\include{02_introduction}
+\include{chapter1}
+\include{chapter2}
+\include{chapter3}
+\include{chapter4}
+\include{03_2_ch2_formatting}
+\include{08_conclusions}
+
+% BibTeX-iga bibliograafia lisamine
+\pagebreak
+\addcontentsline{toc}{section}{Kasutatud allikad (\textsc{Bib}\LaTeX iga)}
+\printbibliography[title={Kasutatud allikad (\textsc{Bib}\LaTeX iga)}]
+
+% Lisad
+\include{lisa1}
+\include{10_2_appendix2}
+
+% Lihtlitsents
+\include{copyright}
+
+\end{document}

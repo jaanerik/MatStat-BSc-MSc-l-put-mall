@@ -1,0 +1,284 @@
+\section{Viterbi raja lähendamine}
+
+Täpsustame uuritavaid mudeleid ning kirjeldame algoritme, mille abil lähendada mudeli Viterbi rada.
+
+\subsection{Belief propagation (BP)}
+
+Tutvustame kaht lihtsat mudelit ning implementeerime mõlema jaoks BP algoritmi. Kui vaatlused $\mathbf{y}$ on fikseeritud, siis on tegemist mittehomogeense paarikaupa Markovi ahelaga (\ref{eq:inhomog_markov}), mispärast on kahel mudelil algoritmi kirjeldamine analoogne.
+
+\subsubsection{Paarikaupa varjatud tunnustega Markovi ahel}
+
+Vaatleme Markovi ahelat $(X,U)$ üle tähestiku $\mathcal{X} \times \mathcal{U}$:
+\begin{align}
+    \label{eq:model1_1}
+    p(u_{t}, x_{t} | \bm{u}_{1:t-1}, \bm{x}_{1:t-1} ) :&= P(U_{t} = u_{t}, X_{t} = x_{t} | \bm{U}_{1:t-1} = \bm{u}_{1:t-1}, \bm{X}_{1:t-1}=\bm{x}_{1:t-1}) \\
+    \nonumber
+    &= P(U_{t} = u_{t}, X_{t} = x_{t} | U_{t-1} = u_{t-1}, X_{t-1}=x_{t-1}) =: p(u_{t}, x_{t} | u_{t-1}, x_{t-1} ), \\
+    \label{eq:model1_2}
+    p(u_1,x_1) :&= P(U_1 = u_1, X_1 = x_1)
+\end{align}
+kusjuures me ei eelda, et marginaalprotsessid $X$ ja $U$ oleksid Markovi ahelad.
+
+Olgu $((X,U),Y)$ varjatud Markovi ahel:
+\begin{equation}
+    \label{eq:model1_3}
+    p(\bm{y} | \bm{x}, \bm{u}) = \prod_{t=1}^T p(y_t | x_t, u_t).
+\end{equation}
+
+Et $p(x,u|y) p(y) = p(y | x,u) p(x,u)$, siis $\ln p(x,u|y) = \ln p(x,u) + \ln p(y | x,u) - \ln p(y)$.
+
+Vaatleme mõõte $q(\bm{u}), q(\bm{x})$, kus
+\begin{align*}
+    \mathcal{X}^T \ni \bm{x} \mapsto q(\bm{x}) =& q(x_1) \prod_{t=2}^T q(x_t | x_{t-1})\\
+    \mathcal{U}^T \ni \bm{u} \mapsto q(\bm{u}) = q(u_1) \prod_{t=2}^T q(u_t | u_{t-1})
+\end{align*}
+ning tähistame $C := \sum_{x_{1:T}} q(x_{1:T}) $.
+
+Variatsioonilise Bayesi iteratsiooniks saame \parencite{Fox.2011} põhjal
+\begin{align*}
+    \ln q(\bm{u}) &= \sum_{\bm{x}} \ln p(\bm{x},\bm{u} | \bm{y}) q(\bm{x}) \\
+    &= \sum_{\bm{x}} \ln p(\bm{x}, \bm{u}) q(\bm{x}) + \sum_{\bm{x}} \ln p(\bm{y} | \bm{x}, \bm{u}) - C \ln p(\bm{y}).
+\end{align*}
+Leiame 
+\begin{align*}
+    \sum_{\bm{x}} \ln p(\bm{x},\bm{u}) q(\bm{x}) &=  \sum_{\bm{x}} \ln \left( p(x_1, u_1) \prod_{t=2}^T p(x_t,u_t | x_{t-1}, u_{t-1}) \right) q(x) \\
+    &= \sum_{x_1} \left( \ln p(x_1, u_1) q(x_1) \sum_{\bm{x}_{2:T}} q(\bm{x}_{2:T} | x_1) \right) \\
+    &+ \sum_{t=2}^T \sum_{x_{t-1}, x_t} \left( \ln p(x_t,u_t | x_{t-1}, u_{t-1}) \sum_{\bm{x}_{\backslash t-1, t}} q(\bm{x}) \right) \\
+    &= \sum_{x_1} \ln p(x_1, u_1) q_1(x_1)  + \sum_{t=2}^T \sum_{x_{t-1}, x_{t}} \ln p(x_t,u_t | x_{t-1}, u_{t-1}) q_t(x_{t-1},x_{t})
+\end{align*}
+ning
+\begin{align*}
+    \sum_{\bm{x}} \ln p(\bm{y} | \bm{x},\bm{u}) q(\bm{x}) = \sum_{\bm{x}} \ln \left( \prod_{t=1}^T p(y_t | x_t,u_t) \right) q(x_1) \prod_{t=2}^T q(x_t | x_{t-1})  =  \sum_{t=1}^T \sum_{x_t} \ln p(y_t | x_t, u_t) q_t(x_t).
+\end{align*}
+Nüüd defineerime iga $t$ ning iga $u_t \in \mathcal{U}$ jaoks 
+$$\ln b_t(y_t | u_t) := \sum_{x_t \in \mathcal{X}} \ln p(y_t | x_t, u_t) q_t(x_t) = \big< E(y_t | x_t, u_t) \big>_{q_t(x_t)} ,$$
+$$\ln r_1(u_1) := \sum_{x_1 \in \mathcal{X}} \ln p(x_1,u_1) q_1(x_1) = \big< E(x_1,u_1) \big>_{q_1(x_1)}$$
+ning iga $t > 1$ ja iga $(u_{t-1}, u_t) \in \mathcal{U}^2$ jaoks
+$$\ln r_t(u_{t}|u_{t-1}) := \sum_{x_{t-1,t} \in \mathcal{X}^2} \ln p(x_{t},u_t | x_{t-1},u_{t-1}) q_t(x_{t-1}, x_t) = \big< E(x_t,u_t | x_{t-1},u_{t-1}) \big>_{q_t(x_{t-1}, x_t)}. $$
+Näeme, et
+$$ q(\bm{u}) = r_1(u_1) \prod_{t=2}^T r_t(u_t | u_{t-1}) \prod_{t=1}^T b_t(y_t | u_t) =: q(\bm{u},\bm{y}).$$
+
+Meenutame, et me oskame leida $q_t(u_t)$ iga $t$ korral ja $q_t(u_{t-1},u_t)$ iga $t>2$ korral \eqref{eq:fb1} ja \eqref{eq:fb2} abil. Nüüd iteratsiooni teises osas leiame
+\begin{align*}
+    q^{(2)}(\bm{x}) = r_1(x_1) \prod_{t=2}^n r_t(x_t | x_{t-1}) \prod_{t=1}^n b_t(y_t | x_t),
+\end{align*}
+kus 
+\begin{align*}
+    \ln r_1(x_1) &= \big< E(x_1, U_1) \big>_{q_1(u_1)},\\
+    \ln r_t(x_t | x_{t-1}) &= \big< E(x_t, U_t | x_{t-1}, U_{t-1}) \big>_{q_t(u_t, u_{t-1})} \text{ ja }\\
+    \ln b_t(y_t | x_t) &= \big< E(y_t | x_t, U_t) \big>_{q(u_t)} \text{.}
+\end{align*}
+
+Nüüd jääb üle leida $q^{(2)}_1 (x_1)$ ja $t>1$ korral $q^{(2)}_t (x_t | x_{t-1})$ ja nii jätkates jõuame vastavalt varasemalt seatud piirjuhule indeksini $K$ ning mõõduni $q^{(K)}(x)$. Seejärel leiame Viterbi raja Viterbi algoritmi abil.
+
+\subsubsection{Kolmekaupa Markovi ahel}
+
+Kolmekaupa Markovi ahela puhul on eelduse kohaselt fikseeritud $\mathbf{y} = \mathbf{y}_{1:T}$ ning mudelit kirjeldab (\ref{eq:inhomog_markov}) põhjal mittehomogeenne paarikaupa Markovi ahel
+
+\begin{align}
+    \label{eq:model2_1}
+    p(u_{t}, x_{t} | \bm{u}_{1:t-1}, \bm{x}_{1:t-1} ) :&= p(u_t, x_t, y_t | \bm{u}_{1:t-1}, \bm{x}_{1:t-1}, \bm{y}_{1:t-1}) \\
+    \label{eq:model2_2}
+    p(u_1,x_1) :&= p(u_1, x_1, y_1),
+\end{align}
+kus $p(u_{t},x_{t},y_{t}) = P(U_{t} = u_{t}, X_{t} = x_{t}, Y_{t}=y_t)$ ja $p(\cdot|u,x,y) = P(\cdot | U = u, X=x, Y=y)$. 
+
+Variatsioonilised mõõdud on jällegi Markovi ahelad $q(\bm{u}), q(\bm{x})$. Saame variatsioonilise Bayesi iteratsiooniks
+\begin{align*}
+    \ln q(\bm{u}) &= \sum_{\bm{x}} \ln p(\bm{x},\bm{u} | \bm{y}) q(\bm{x})
+\end{align*}
+ning jällegi
+\begin{align*}
+    \sum_{\bm{x}} \ln p(\bm{x},\bm{u}) q(\bm{x}) &=  \sum_{\bm{x}} \ln \left( p(x_1, u_1) \prod_{t=2}^T p(x_t,u_t | x_{t-1}, u_{t-1}) \right) q(x) \\
+    &= \sum_{x_1} \ln p(x_1, u_1) q_1(x_1)  + \sum_{t=2}^T \sum_{x_{t-1}, x_{t}} \ln p(x_t,u_t | x_{t-1}, u_{t-1}) q_t(x_{t-1},x_{t}).
+\end{align*}
+
+Defineerime iga $t$ ning iga $u_t \in \mathcal{U}$ korral analoogselt $\ln r_1(u_1)$ ja $\ln r_t(u_t | u_{t-1})$, kus
+$$\ln r_1(u_1) := \sum_{x_1 \in \mathcal{X}} \ln p(x_1,u_1) q_1(x_1) = \big< E(x_1,u_1) \big>_{q_1(x_1)}$$
+ning iga $t > 1$ ja iga $(u_{t-1}, u_t) \in \mathcal{U}^2$ jaoks
+$$\ln r_t(u_{t}|u_{t-1}) := \sum_{x_{t-1,t} \in \mathcal{X}^2} \ln p(x_{t},u_t | x_{t-1},u_{t-1}) q_t(x_{t-1}, x_t) = \big< E(x_t,u_t | x_{t-1},u_{t-1}) \big>_{q_t(x_{t-1}, x_t)}. $$ Saame
+$$q(\bm{u}) = r_1(u_1)\prod_{t=2}^T r_t(u_t | u_{t-1}),$$
+misjärel leiame $q_t(u_t), q_t(u_t | u_{t-1})$ \eqref{eq:fb1} ja \eqref{eq:fb2} abil. Seejärel uuendame leitud $q(\bm{u})$ abil mõõtu $q(\bm{x})$.
+
+Ainuke erinevus, mis algoritmi implementeerimise seisukohalt on, seisneb üleminekumaatriksi $p(u_t,x_t|u_{t-1},x_{t-1})$ mittehomogeensuses ning emissioonide väljaarvamises. Sama tähelepaneku saame teha ka VMP algoritmi puhul järgmises alapeatükis.
+
+\subsubsection{Väikeste arvudega arvutamine}
+
+Erinevalt varasemale tööle, mis implementeeris täpse väikeste arvudega arvutamise ise \parencite{Soop.2023}, kasutame ise uut teeki \parencite{Pihel.2024} arendades Julia teeki \parencite{Rowley.2024}, mis abstrahheerib selle probleemi meie töös. Praktiliselt tähendab see, et $\alpha, \beta$ väärtuste leidmine ei ole raskendatud ühel iteratsioonil. Küll aga on vaja pärast $\alpha, \beta$ väärtustamist vähemalt üht neist skaleerida ning seda kahel põhjusel. Peamine on see, et \emph{belief propagation} algoritm järgmises alapeatükis eeldab, et mõõdu $q(u,x)$ norm on $1$, mh selleks, et mõõt oleks alt tõkestatud. Teisaks, kui lubada näiteks mõõdul $q(u)$ igal iteratsioonil kahaneda, siis mitme iteratsiooni tulemusena maatriksi $\alpha$ väärtused võivad olla liiga väiksed ka abiteeke kasutades.
+
+\subsection{Variational Message Passing (VMP)}
+
+Arvutuslikult lihtsam juht, mida kirjeldati nt siin \parencite{Parr.2019}, mis kujutab endast ainult Markovi ümbruses (\textit{Markov boundary}) (\ref{eq:markov_blanket}) olevate juhuslike suuruste vaatlemist mõõdu uuendamiseks.
+See on klassikalisem näide ICM-ist e \emph{iterated conditional mode}'ist, kusjuures on võimalik paralleliseerida üle ajasammude $1, \ldots, T$.
+
+\subsubsection{Paarikaupa varjatud tunnustega Markovi ahel}
+
+Vaatleme sama mudelit (\ref{eq:model1_1}), (\ref{eq:model1_2}), (\ref{eq:model1_3}). Leiame $q_t(w_t) := q_t(u_t,x_t)$ pannes tähele, et $w_t$ Markovi ümbrus on
+$$mb(w_t) = \{y_{t-1},w_{t-1},y_t,y_{t+1},w_{t+1} \}$$
+ning saame $t \in \{2,\ldots,N-1\}$ jaoks
+$$q_t(w_t) \propto \nu_{B_t}(w_t) \cdot \vec{\nu}_{t}(w_t) \cdot \cev{\nu}_{t+1}(w_t),
+$$
+kus
+\begin{align*}
+    \ln \nu_{B_t}(w_t) &= E(y_t\ |\ w_t),\\
+    \ln \vec{\nu}_{t}(w_t) &= \left< E(w_t |\ w_{t-1}) \right>_{q_{t-1}(w_{t-1})} \text{ ja}\\
+    \ln \cev{\nu}_{t+1}(w_t) &= \left< E(w_{t+1}\ |\ w_t) \right>_{q_{t+1}(w_{t+1})}.
+\end{align*}
+
+Ajasammude $t=1$ ja $t=T$ korral on kaalude muutus vastavalt $q_1(w_1) \propto \nu_{B_1}(w_1) \cdot \cev{\nu}_{2}(w_1)$ ja $q_T(w_T) \propto \nu_{B_T}(w_T) \cdot \vec{\nu}_{T}(w_T)$.
+
+\
+
+Kirjutame eelneva tulemuse tuletuskäigu. Eeldame, et $q(\bm{u}, \bm{x}) = \prod_{t=1}^T{q_t(u_t, x_t)} = \prod_{t=1}^T{q_t(w_t)}$, kus iga $q_t$ on tõenäosusmõõt. Fikseerime nüüd $t$. Meid huvitav jaotus on $q_t(w_t)$ ning muud jaotused loeme fikseerituks. Sellisel juhul on ELBO (\ref{eq:elbo1}) maksimiseerimine ekvivalentne suuruse $L_t[q(\bm{w})]$ maksimiseerimisega, kus
+
+
+\begin{align*}
+    L_t[q(\bm{w})] :=& \sum_{\substack{w_{t+1}\\ w_{t} \\ w_{t-1}}} q_{t-1}(w_{t-1}) q_t(w_{t}) q_{t+1}(w_{t+1}) \Big(E(w_{t+1}, y_{t+1}\ |\ w_{t}, y_{t}) \\
+    + E(w_{t}, y_{t}\ &|\ w_{t-1}, y_{t-1}) -  \ln q_{t+1}(w_{t+1}) -  \ln q_t(w_{t})  \Big)\\
+    =&\ \sum_{\substack{w_t\\ w_{t-1}} } q_{t-1}(w_{t-1})q_t(w_{t}) \Big(E(w_{t}, y_{t}\ |\ w_{t-1}, y_{t-1}) -  \ln q_t(w_{t})  \Big)\\
+    + \sum_{\substack{w_{t}\\ w_{t+1} }} q_t(&w_t)q_{t+1}(w_{t+1}) \Big(E(w_{t+1}, y_{t+1}\ |\ w_{t}, y_{t}) -  \ln q_{t+1}(w_{t+1})  \Big)
+\end{align*}
+
+Võttes eelnevast suurusest funktsionaalse tuletise, saame leida kriitilise punkti süsteemi abil, kus
+
+\begin{align*}
+   \ln q_t(w_{t}) &= \sum_{w_{t-1} } q_{t-1}(w_{t-1}) \Big(E(w_{t}, y_{t}\ |\ w_{t-1}, y_{t-1})  \Big) \\
+&+ \sum_{w_{t+1} } q_{t+1}(w_{t+1}) \Big(E(w_{t+1}, y_{t+1}\ |\ w_{t}, y_{t})  \Big),
+\end{align*}
+kust saamegi $q_t(w_t) \propto \nu_A(w_t) \cdot \vec{\nu}_{t-1}(w_t) \cdot \cev{\nu}_{t+1}(w_t)$.
+
+Valikuid mis järjekorras jaotusi uuendada, on mitu. \cite{Koudahl.2024}{ 1.4.2 peatükis} on kasutatud viisi, kus fikseeritud $t \in \{1, \ldots, T\}$ korral itereeritakse jaotust $q_t(u_t, x_t)$ kuni koondumiseni ja seejärel fikseeritakse $t-1$ või $t+1$. Paralleeliseerimise huvides võib fikseerida korraga kõik paarituarvulised $t$ kuni kõik jaotused on koondunud ning seejärel fikseerida paarisarvulised $t.$ Järgnevas alapeatükis kirjeldatav algoritm teeb seda igal iteratsioonil järjestikku $t = 1,2,\ldots,T$ korral ning vaikimisi paralleeliseeerimist ei toimu.
+
+\subsubsection{VMP rakendamine teegis RxInfer paarikaupa varjatud Markovi ahelal} \label{section:vmp_tmc}
+
+Kasutame hetkel tähistusi $\mathcal{W}^T \ni w = (u_t, x_t)_{t=1}^T \in (\mathcal{U} \times \mathcal{X})^T,$ kus kolmekordne Markovi ahel on defineeritud kahekordse Markovi ahela $(w_t, y_t)_{t=1}^T \in (\mathcal{W} \times \mathcal{Y})^T$ abil. Optimiseeritavad variatsioonilised mõõdud olgu $q_t(w_t)$ ning hiljem Viterbi raja lähendamiseks anname punkthinnangu iga $t$ korral kui $x_t^* = \argmax \sum_{u}{q_t(u_t,x_t)}$.
+
+\begin{figure}[!ht]
+\centering
+\resizebox{0.8\textwidth}{!}{
+\begin{circuitikz}
+\tikzstyle{every node}=[font=\LARGE]
+\draw  (0,19) rectangle  node {\LARGE $\pi$} (2,17);
+\draw [->, >=Stealth] (2,18) -- (3.75,18)node[pos=0.5,above, fill=white]{$w_{1}$};
+\draw [->, >=Stealth] (4.5,17.25) -- (4.5,15.75)node[pos=0.5,right, fill=white]{$w_1$};
+\draw  (4.5,11.25) circle (1cm) node {\Large $\hat{y}_1$} ;
+\node [font=\Large] at (1.5,16) {};
+\draw [->, >=Stealth] (12.25,18) -- (14,18)node[pos=0.5,above, fill=white]{$w_{T-1}$};
+\draw [->, >=Stealth] (11.5,17.25) -- (11.5,15.75)node[pos=0.5,right, fill=white]{$w_{T-1}$};
+\draw  (11.5,11.25) circle (1cm) node {\Large $\hat{y}_{T-1}$} ;
+\draw  (3.75,18.75) rectangle  node {\LARGE $=$} (5.25,17.25);
+\draw  (3.5,15.75) rectangle  node {\LARGE $B_1$} (5.5,13.75);
+\node [font=\Large] at (5,16.25) {};
+\draw [->, >=Stealth] (4.5,13.75) -- (4.5,12.25)node[pos=0.5,right, fill=white]{$y_1$};
+\draw [->, >=Stealth] (5.25,18) -- (7,18)node[pos=0.5,above, fill=white]{$w_{1}$};
+\draw  (7,19) rectangle  node {\LARGE $A$} (9,17);
+\draw  (14,19) rectangle  node {\LARGE $A$} (16,17);
+\draw  (10.75,18.75) rectangle  node {\LARGE $=$} (12.25,17.25);
+\draw [dashed] (9,18) -- (10.75,18);
+\draw  (10.5,15.75) rectangle  node {\LARGE $B_{T-1}$} (12.5,13.75);
+\draw [->, >=Stealth] (11.5,13.75) -- (11.5,12.25)node[pos=0.5,right, fill=white]{$y_{T-1}$};
+\draw  (14,15.75) rectangle  node {\LARGE $B_T$} (16,13.75);
+\draw [->, >=Stealth] (15,13.75) -- (15,12.25)node[pos=0.5,right, fill=white]{$y_T$};
+\node [font=\Large] at (12,16.25) {};
+\node [font=\Large] at (12,16.25) {};
+\draw [->, >=Stealth] (15,17) -- (15,15.75)node[pos=0.5,right, fill=white]{$w_T$};
+\draw  (15,11.25) circle (1cm) node {\Large $\hat{y}_{T}$} ;
+\end{circuitikz}
+}
+\caption{Forney stiilis graaf mudelist (\ref{eq:model1_1}), (\ref{eq:model1_2}), (\ref{eq:model1_3}).}
+\label{fig:tmm_model}
+\end{figure}
+
+Eeldame, et me tähistame sõnu indeksitena $w_t \in \{1,\ldots,|\mathcal{W}|\}$ ja saame tähistada $w_t \sim Cat(G)$ korral $G_{w_t} = q_t(w_t)$, mis aitab meil kirjeldada jaotusi vektorkujul. Kasutame samu tähistusi nagu seda tehti \cite{Beal2003VariationalAF}{ kolmandas peatükis}. Kirjutame alg-, ülemineku- ja emissioonimaatriksid kui
+\begin{align*}
+   A &= \{a_{jj'} | a_{jj'} = p(w_t = j | w_{t-1} = j')\} &\sum_{j'=1}^{|\mathcal{W}|} a_{jj'} = 1 \; \forall j\\
+   B_t &= \{ b_j | b_j = p(\hat{y}_t | w_t = j)\}\\
+    \pi &= \{ \pi_j | \pi_j = p(w_1 = j) \} &\sum_{j=1}^{|\mathcal{W}|} \pi_{j} = 1.
+\end{align*}
+Sarnaselt kujutame ka variatsioonilisi jaotusi. Fikseerime $t \in \{2,\ldots,T\}$ ning kirjutame vektorkujul $t-1$ ja $t$ jaotuse kui
+\begin{align*}
+    q_{t-1}(w_{t-1}) &\sim Cat(F),\\
+    q_{t}(w_{t}) &\sim Cat(G)
+\end{align*}
+ja meenutame, et sümbol $E = \ln P$ tähistab endiselt energiat. Saame uuritavat mudelit ka visuaalselt kujutada (\ref{fig:tmm_model}), kusjuures võrdus-tipp  (\cite{COX2019185}{ peatükk 1.3}) on defineeritud kolme muutuja $s,s',s''$ jaoks kui $f_=(s,s',s'') = \delta(s-s')\delta(s-s'')$, kus $\delta$ on kas Kroneckeri või Diraci deltafunktsioon.
+
+Kirjeldame sõnumeid tipu $A$ implementeerimise seisukohalt
+\begin{align*}
+    \ln \vec{\nu}_{t}(w_t) \propto \ln \vec{\eta}(w_t) :&= \left< E(w_t | w_{t-1}) \right>_{q_{t-1}(w_{t-1})} = (\ln A \times F)_{w_t} \\
+    \ln \cev{\nu}_t(w_{t-1}) \propto \ln \cev{\eta}_t(w_{t-1}) :&= \left< E(w_{t} | w_{t-1}) \right>_{q_{t}(w_{t})} = ((\ln A)^T \times G)_{w_{t-1}}\\
+    \ln \nu_t(w_t) \propto \ln \eta(w_t) :&= \left< E(y_t | w_t) \right>_{q_{y_{t}}(y_t)} = \ln p(\hat{y}_t | w_t) = ((\ln B_t)^T \times 
+    G)_{w_t},
+\end{align*}
+
+kus $\ln \vec{\nu}_{t}(w_t) = 1/Z_t \ln \vec{\eta}(w_t) $, $\ln \cev{\nu}_{t}(w_t) = 1/Z_t' \ln \cev{\eta}(w_t) $, $\ln \nu_{t}(w_t) = 1/Z_t'' \ln \eta(w_t)$. Logaritm-, eksponentsiaal ja liitmisoperatsiooni defineerime elemendiviisiliselt, korrutise $\times$  maatrikskorrutisena ning $Z_t$,$Z_t'$ ja $Z_t''$ normaliseerivad vastavalt $\vec{\nu}_t(w_t)$,$\cev{\nu}_t(w_t)$ ja $\nu_t(w_t)$. Implementeerimaks seda programmikoodis, peame veel kirjeldama keskmist enerigat. Et tegemist on VMP algoritmiga, kus me nõuame sõltumatust $q_{t-1}$ ja $q_t$ vahel, siis ühismarginaali me defineerima ei pea. Leiame tipu $A$ ja $B_t$ keskmise energia $t$ puhul
+\begin{align*}
+    \left<E(w_t|w_{t-1}) \right>_{q(w_{t-1}),q(w_t) } &= F^T \times \ln A \times G\\
+    \left<E(y_t|w_t) \right>_{q(y_t),q(w_t) } &= F^T \times \ln B_t.
+\end{align*}
+
+Nüüd jääb veel üle koodi kompileerimiseks vastavalt RxInfer nõuetele algväärtustada jaotused iga $t > 1$ korral, näiteks $q_t \sim Cat(1/|\mathcal{W}|,\ldots,1/|\mathcal{W}|)$. Analoogselt BP algoritmis initsialiseerisime variatsioonilised mõõdud $q^{(1)}(\bm{u}), q^{(1)}(\bm{x})$, kus algtõenäosused ja üleminekutõenäosused on ühtlase jaotusega.
+
+\subsubsection{Kolmekaupa Markovi ahel}
+
+Vaatleme mudelit (\ref{eq:model2_1}), (\ref{eq:model2_2}). Markovi ümbrus on kahe mudeli puhul sama, kuid seekord saame mõõdu parandamist kirjeldada, kui 
+\begin{align*}
+    q_t(w_t) &\propto \vec{\nu}_{t}(w_t) \cev{\nu}_{t+1}(w_t)\\
+    q_1(w_1) &\propto \cev{\nu}_{2}(w_1)\\
+    q_T(w_T) &\propto \vec{\nu}_{T}(w_{T}),
+\end{align*}
+kus jällegi
+\begin{align*}
+    \ln \vec{\nu}_{t}(w_t) &= \left< E_t(w_t |\ w_{t-1}) \right>_{q_{t-1}(w_{t-1})} \text{ ja}\\
+    \ln \cev{\nu}_{t+1}(w_t) &= \left< E_t(w_{t+1}\ |\ w_t) \right>_{q_{t+1}(w_{t+1})},
+\end{align*}
+kuid $E_t(w_t |\ w_{t-1}) = \ln P(w_t, y_t | w_{t-1},y_{t-1})$ puhul ei ole enam tegu homogeense üleminekumaatriksiga.
+
+\subsubsection{VMP rakendamine teegis RxInfer kolmekaupa Markovi ahelal} 
+
+Kirjutame alg- ja üleminekumaatriksid kui
+\begin{align*}
+   A_t &= \{a^t_{jj'} | a^t_{jj'} = p(w_t = j | w_{t-1} = j')\} &\sum_{j'=1}^{|\mathcal{W}|} a^t_{jj'} = 1 \; \forall j, t\\
+    \pi &= \{ \pi_j | \pi_j = p(w_1 = j) \} &\sum_{j=1}^{|\mathcal{W}|} \pi_{j} = 1.
+\end{align*}
+
+\begin{figure}[!ht]
+\centering
+\resizebox{1\textwidth}{!}{%
+\begin{circuitikz}
+\tikzstyle{every node}=[font=\LARGE]
+
+\draw  (0,19) rectangle  node {\LARGE $\pi$} (2,17);
+\draw [->, >=Stealth] (2,18) -- (3.75,18)node[pos=0.5,above, fill=white]{$w_{1}$};
+\node [font=\Large] at (1.5,16) {};
+\draw [->, >=Stealth] (9.5,18) -- (11.25,18)node[pos=0.5,above, fill=white]{$w_{T-1}$};
+\node [font=\Large] at (5,16.25) {};
+\draw  (3.75,19) rectangle  node {\LARGE $A_2$} (5.75,17);
+\draw  (11.25,19) rectangle  node {\LARGE $A_T$} (13.25,17);
+\draw [dashed] (5.75,18) -- (7.5,18);
+\node [font=\Large] at (12,16.25) {};
+\node [font=\Large] at (12,16.25) {};
+
+\draw  (7.5,19) rectangle  node {\LARGE $A_{T-1}$} (9.5,17);
+\draw [->, >=Stealth] (13.25,18) -- (15,18)node[pos=0.5,above, fill=white]{$w_{T}$};
+\draw  (15,19) rectangle  node {\LARGE $Id$} (17,17);
+\end{circuitikz}
+}%
+\caption{Forney stiilis graaf mudelist (\ref{eq:model2_1}), (\ref{eq:model2_2}).}
+\label{fig:tmm_model2}
+\end{figure}
+
+Fikseerime $t \in \{2,\ldots,T\}$ ning kirjutame vektorkujul $t-1$ ja $t$ jaotuse kui
+\begin{align*}
+    q_{t-1}(w_{t-1}) &\sim Cat(F),\\
+    q_{t}(w_{t}) &\sim Cat(G).
+\end{align*}
+Saame kirjeldada sõnumeid kui 
+\begin{align*}
+    \ln \vec{\nu}_{t}(w_t) \propto \ln \vec{\eta}_t(w_t) :&= \left< E(w_t | w_{t-1}) \right>_{q_{t-1}(w_{t-1})} = (\ln A \times F)_{w_t} \\
+    \ln \cev{\nu}_{t}(w_{t-1}) \propto \ln \cev{\eta}_{t}(w_{t-1}) :&= \left< E(w_{t} | w_{t-1}) \right>_{q_{t}(w_{t})} = ((\ln A)^T \times G)_{w_{t}},
+\end{align*}
+kus variatsioonilised sõnumid $\vec{\nu}_{t}(w_t), \cev{\nu}_{t}(w_{t-1})$ on normaliseeritud. Veel piisab leida tipu $A_t$ keskmine energia
+
+$$\left<E(w_t|w_{t-1}) \right>_{q(w_{t-1}),q(w_t) } = F^T \times \ln A_t \times G.$$
+
+Et seda modelleerida teegis RxInfer, on tarvis ka implmenteerida ühiktipp (joonisel \ref{fig:tmm_model2} kui \emph{Id}), mis edastab ühtlase jaotusega sõnumi servale $w_T$. Siinkohal on analoog BP algoritmis $\beta_T(u_T), \beta_T(x_T)$ võrdsustamine ühega. See on tarvilik, sest RxInfer vajab serva defineerimiseks mõlema tipu täpsustamist.
