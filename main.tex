@@ -1,8 +1,9 @@
-\documentclass[a4paper,12pt]{article}
+\documentclass[a4paper,12pt,estonian]{article}
 \usepackage[T1]{fontenc}	% For use with pdflatex
 \usepackage[utf8]{inputenc} % For use with pdflatex
 % \usepackage[english]{babel} % Ingliskeelne lõputöö
 \usepackage[estonian]{babel} % Eestikeelne lõputöö
+\usepackage{csquotes}
 
 \usepackage{setspace}
 \setstretch{1.5}
@@ -21,7 +22,6 @@
 \usepackage{hyperref}
 \usepackage[nottoc]{tocbibind}
 \usepackage{bm}
-\usepackage[estonian]{babel}
 \usepackage{breqn}
 \usepackage{mathtools}
 \usepackage{circuitikz}
@@ -52,8 +52,29 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
 % Viitesüsteem
-\usepackage[citestyle=authoryear,natbib=true,backend=bibtex, maxbibnames=99, bibstyle=authoryear]{biblatex}
+% \usepackage[citestyle=authoryear,natbib=true,backend=bibtex, maxbibnames=99, bibstyle=authoryear]{biblatex}
+\usepackage[backend=biber,style=numeric,sortcites,natbib=true,sorting=none]{biblatex}
 \addbibresource{bibliography.bib}
+
+\begin{filecontents*}{estonian.lbx}
+\ProvidesFile{est.lbx}[2025/05/28 Estonian language stub]
+
+\InheritBibliographyExtras{estonian}
+
+\DeclareBibliographyStrings{%
+  bibliography     = {{Kasutatud kirjandus}{Kasutatud kirjandus}},
+  references       = {{Viited}{Viited}},
+  byeditor         = {{kirjastus}{kirjastus}},
+  in               = {{blabla}{blabla}},
+  page             = {{lehekülg}{lk\adddot}},
+  pages            = {{leheküljed}{lk\adddot}},
+  and              = {{ja}{ja}},
+  andothers        = {{ja teised}{jt\adddot}},
+}
+
+\endinput
+
+\end{filecontents*}
 
 \title{Kolmekordsete Markovi ahelate MAP raja lähendamine variatsiooniliste meetoditega}
 \author{Jaan Erik Pihel}
