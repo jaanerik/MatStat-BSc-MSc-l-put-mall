@@ -1,18 +1,18 @@
 \small{
 
 \begin{center}
-\MakeUppercase{\textbf{Kolmekordsete Markovi ahelate MAP raja lähendamine variatsiooniliste meetoditega}}\\
+\MakeUppercase{\textbf{Kolmekaupa Markovi ahelate Viterbi raja lähendamine variatsiooniliste meetoditega}}\\
 Magistritöö\\
 Jaan Erik Pihel\\
 \end{center}
 
 \normalsize{\textbf{Lühikokkuvõte}}\\
-\bla .\\
+Kolmekaupa Markovi ahel (TMM) üldistab paarikaupa Markovi ning varjatud Markovi ahelaid. Ülesande konstrueerimisel eeldame, et meil on Markovi protsessi $(U,X,Y)$ puhul fikseeritud vaatlusandmed $(\bm{y}_t)_{t=1}^T$ ning me soovime leida Viterbi rada $(\bm{x}_t)_{t=1}^T$ ehk $\argmax_{\bm{x}} \sum_{\bm{u}}p(\bm{u},\bm{x}|\bm{y})$. Et selle lahendamine on NP raske, leitakse töös Viterbi raja lähend variatsioonise Bayesi meetodi abil. \emph{Belief propagation} (BP) ja \emph{variational message passing} (VMP) algoritmide tulemusena leitakse erinevate kitsendustega $Q(\bm{u},\bm{x})$, mis minimiseerib KL kaugust $D[Q \| P]$ ning seejärel antakse lähend mõõdu $Q(\bm{x})$ Viterbi rajana kasutades Viterbi algoritmi. Eksperimendid näitavad, et kaks algoritmi komplimenteerivad üksteist ehk arvutuslikult keerukam BP algoritm ei ole alati parem. \\
 \textbf{CERCS teaduseriala:} P160 Statistika, operatsioonianalüüs, programmeerimine, finants- ja kindlustusmatemaatika.\\
-\textbf{Märksõnad:} Juhuslik, valim, tõenäosus.\\
+\textbf{Märksõnad:} HMM, PMM, TMM, juhuslikud protsessid, Markovi ahelad, variatsiooniline Bayesi meetod, vabaenergiaprintsiip.\\
 }
 
-\vspace{0.5cm}
+\pagebreak
 
 \small{
 
@@ -23,8 +23,7 @@ Jaan Erik Pihel\\
 \end{center}
 
 \normalsize{\textbf{Abstract}}\\
-\bla \\
-\textbf{CERCS research specialisation:} P160 Statistics, operations research, programming, financial
-and actuarial mathematics.\\
-\textbf{Key Words:} Random, sample, probability.\\
+Triplet Markov chain (TMM) generalises both pairwise Markov and hidden Markov chains. We look at a problem for which we have a Markov process $(U,X,Y)$ with fixed observations $(\bm{y}_t)_{t=1}^T$ and we wish to find a Viterbi path for $(\bm{x}_t)_{t=1}^T$, i.e. $\argmax_{\bm{x}} \sum_{\bm{u}}p(\bm{u},\bm{x}|\bm{y})$. Since that is a NP hard problem, we approximate the Viterbi path using variational Bayes methods. Belief propagation (BP) and variational message passing (BP) algorithms find a measure $Q(\bm{u},\bm{x})$ under different constraints which minimise KL divergence $\DKL[Q \| P]$ and give the Viterbi path approximation as the Viterbi path of the marginal $Q(\bm{x})$ using the Viterbi algorithm. Experiments show that the two algorithms compliment each other, i.e. sometimes the computationally easier VMP algorithm outperforms the other algorithm. \\
+\textbf{CERCS research specialisation:} P160 Statistics, operations research, program- ming, actuarial mathematics\\
+\textbf{Key Words:} HMM, PMM, TMM, random processes, Markov chains, variational Bayes method, free energy principle.\\
 }

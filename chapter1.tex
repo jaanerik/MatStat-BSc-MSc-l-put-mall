@@ -2,117 +2,281 @@
 
 \subsection{Paarikaupa ja kolmekaupa Markovi ahelad}
 
-Et paarikaupa ja kolmekaupa Markovi ahelate omadusi on varasemalt uuritud palju \parencite{Soop.2023}, \parencite{Avans.2021}, \bla, siis toome välja vaid definitsioonid.
+Et paarikaupa ja kolmekaupa Markovi ahelate omadusi on varasemalt uuritud palju \parencite{Soop.2023}, \parencite{Avans.2021}, siis toome välja vaid definitsioonid.
 
-Olgu $(\mathcal{U},\sigma_u,\mu_u)$ ja $(\mathcal{X},\sigma_x,\mu_x)$ mõõduga ruumid. Hulgal $\mathcal{Z} \subseteq \mathcal{U} \times \mathcal{X}$, korrutis-$\sigma$ algebraga $\mathcal{B}(\mathcal{Z}) = \sigma_u \otimes \sigma_x$ ning korrutistõenäosusmõõduga $\mu_z = \mu_u \times \mu_x$ defineeritud homogeenset Markovi ahelat nimetatakse \textbf{paarikaupa Markovi ahelaks} (PMM).
+Paarikaupa Markovi ahelaks nimetame kahe muutujaga Markovi ahelat $\{Z_t\}_{t} = \{(X_t,Y_t)\}_{t}$, mille võimalikud väärtused on hulgas $\mathcal{Z} \subseteq \mathcal{X} \times \mathcal{Y}$. Kui $\mathcal{Y}$ on loenduv, saame Markovi ahelat kirjeldada $t>1$ korral homogeense üleminekumaatriksi $P(Z_t|Z_{t-1})$ ja $Z_1$ jaotuse abil. Kui $\mathcal{Y}$ ei ole loenduv, kirjeldame Markovi ahelat üleminekutuuma $K$ abil, millel leidub tihedus korrutismõõdu $c \times \mu$ suhtes, kus $c$ on loendav mõõt hulgal $\mathcal{X}$ ja $\mu$ on töös Lebesgue mõõt hulgal $\mathcal{Y}$. Üleminekutuum $K$ aitab üldistada üleminekumaatriksi pideva juhu jaoks ja see on defineeritud kui
+$$K = \{ K(z,A) | z \in \mathcal{Z}, A \in \mathcal{B}(\mathcal{Z}) \},$$
+kus iga $A \in \mathcal{B}(\mathcal{Z})$ korral on $K(\cdot, A)$ mittenegatiivne mõõtuv funktsioon hulgal $\mathcal{Z}$ ja iga $z \in \mathcal{Z}$ korral on $K(\cdot, z)$ tõenäosusfunktsioon hulgal $\mathcal{B}(\mathcal{Z})$. 
 
-Kui nüüd vaadelda eelnevatele mõõduga ruumidele lisaks veel tõenäosusruumi $(\mathcal{Y},\sigma_y,\mu_y)$, siis defineerime kolmekaupa Markovi ahela kui homogeense Markovi ahela tõenäosusruumil $(\mathcal{W}, \mathcal{B}(\mathcal{W}),\mu_w)$, kus $\mathcal{W} \subseteq \mathcal{U} \times \mathcal{X} \times \mathcal{Y}$, $\mathcal{B}(\mathcal{W}) := \sigma_u \otimes \sigma_x \otimes \sigma_y$ ja $\mu_w := \mu_u \times \mu_x \times \mu_y$.
+Olgu meil iga $t>1$ korral sama üleminekutihedus
+$$q: \mathcal{Z}^2 \rightarrow [0,\infty),\; (z_t,z_{t-1}) \mapsto q(z_t|z_{t-1}),$$
+kus $q(\cdot|z_{t-1})$ on tõenäosusmõõdu tihedusfunktsioon korrutismõõdu $c \times \mu$ suhtes. Siis tuuma aitab defineerida meil iga $z \in \mathcal{Z}, A \in \mathcal{B}(\mathcal{Z})$ korral 
+$$K(z_{t-1},A) := \int_A q(z_t|z_{t-1}) c \times \mu (dz_t).$$ 
+Olgu meil algtõenäosusmõõt $\pi \ll c \times \mu$. Kui $A_1,\ldots,A_T \in \mathcal{B}(\mathcal{Z})$, siis kirjutame 
+\begin{align*}
+    &P(Z_1 \in A_1,\ldots,Z_T \in A_T)\\
+    &= \int_{z_1 \in A_1} \ldots \int_{z_{T} \in A_{T}} \pi(dz_1) K(z_1, dz_2),\ldots,K(z_{T-1},A_T).
+\end{align*}
 
-Töös vaatleme vaid mudeleid üle lõplike $\mathcal{X},\mathcal{U}$ tähestike ehk diskreetsete $\sigma_u, \sigma_x$ algebrate ja loendavate mõõtudega, kuid viimane $\sigma_y$ võib olla suvaline. \bla midagi valesti!
+Saame kirjutada järjendi $z_1,\ldots,z_T \in \mathcal{Z}$ tiheduse kui
+$p(z_1,\ldots,z_T) = \pi(z_1)\prod_{t=2}^Tq(z_t|z_{t-1}).$
+
+Nüüd defineerime kolmekaupa Markovi ahela kui $\{Z_t\}_{t} = \{(U_t,X_t,Y_t)\}_{t}$ üle ruumi $\mathcal{Z} \subseteq \mathcal{U} \times \mathcal{X} \times \mathcal{Y}$, kus lisaks varasemale on defineeritud lõplik $\mathcal{U} = \{1,\ldots,|\mathcal{U|}\}$ loendava mõõduga $c'$. Üleminekutihedus olgu endiselt $q$. Kuigi meil on võimalik defineerida selline $\Tilde{X}_t = (U_t,X_t)$ ja loendav mõõt $\Tilde{c}$, et me saaks samaväärselt vaadata paarikaupa Markovi ahelat $\{Z_t\}_{t} = \{(\Tilde{X}_t,Y_t)\}_{t}$, siis põhjus vaadelda siiski eraldi kolmekaupa Markovi ahelat on semantiline - tihti tähistab protsess $Y$ vaatlusi, $X$ meid huvitavat protsessi ning $U$ protsessi, mille erinevad hinnnagud meid otseselt ei huvita, kuid mis on mudeli kirjeldamiseks tähtis. Öeldakse, et protsess $U$ on segav protsess (\emph{auxiliary of nuisance process}).
+
+%%%%%% -------------
+\hline
+
+Markovi ahel on...
+
+Homogeene Markovi ahel on...
+
+Paarikaupa Markovi ahel on Markovi ahel...
+
+Kolmekaupa Markovi ahel on Markovi ahel...
+
+Marginaalprotsessid ei pruugi olla Markovi ahelad...
+
+%%%%%% -------------
+
+Kuna paarikaupa ja kolmekaupa Markovi ahelad on Markovi ahelad, omavad nad omaette definitsioonidena mõtet, kui anda marginaalprotsessidele $\bm{X},\bm{U},\bm{Y}$ asjakohane tähendus. Me anname nendele marginaalprotsessidele järgmised tähendused: juhuslik vektor $\bm{X} \in \mathcal{X}^T$ kirjeldab meile huvitavaid varjatud tunnuseid, juhuslik vektor $\bm{U} \in \mathcal{U}^T$ on segav parameeter ning juhuslik vektor $\bm{Y} \in \mathcal{Y}^T$ kirjeldab vaatlusandmeid. See tähendab, et tähistame tähega $\bm{Y}$ juhuslikku vektorit, mille järgi hakkame võtma tinglikku tõenäosust $(\bm{X},\bm{U})|\bm{Y}$ ning tähega $\bm{U}$ tähistame juhuslikku vektorit, mille me summeerime ühisjaotusest välja, et saada juhusliku vektori $\bm{X}|\bm{Y}$ jaotus.
 
 
-\subsection{Variatsiooniline Bayesi meetod}
 
-Olgu meil vaatlusandmeid kirjeldav juhuslik suurus $\bm{Y} \in \mathcal{Y}^T$ ning meid huvitavaid varjatud tunnuseid kirjeldav juhuslik suurus $\bm{X} \in \mathcal{X}^T$ ning loeme segavaks parameetriks juhusliku suuruse $\bm{U} \in \mathcal{U}^T$. Olgu teada homogeense kolmekordse Markovi ahela üleminekujaotus $P(u_k, x_k, y_k | u_{k-1}, x_{k-1}, y_{k-1})$ ning $P(u_1, x_1, y_1)$ iga $u_1 \in \mathcal{U}, x_1 \in \mathcal{X}, y_1 \in \mathcal{Y}$ jaoks. Saab näidata (peatükk \ref{chapter:forw_back}, valem \ref{eq:inhomog_markov}), et fikseeritud $\bm{y}$ korral $P(u_k, x_k | u_{k-1}, x_{k-1}) := P(u_k, x_k | u_{k-1}, x_{k-1}, \bm{y})$ on tegu mittehomogeense Markovi ahelaga.
-    
-Ülesandeks on leida $\bm{x} \in \mathcal{X}^T$, mis saavutab maksimumi suuruse 
-$$\sum_{\bm{u} \in \mathcal{U}^T}{P(\bm{x}, \bm{u} | \bm{y})}$$
-jaoks, kusjuures sellist $\mathbf{x}$ nimetatakse \textbf{Viterbi rajaks}. On võimalik näidata \parencite{LYNGSO2002545}, et see on NP raske ülesanne. Viterbi raja lähendamiseks kirjeldame variatsioonilisi meetodeid. Töö koosneb kahe algoritmi kirjeldamisest.
+
+
+%%%%%% -------------
+Olgu teada homogeense kolmekordse Markovi ahela üleminekujaotus $p(u_k, x_k, y_k | u_{k-1}, x_{k-1}, y_{k-1})$ ning algjaotus $p(u_1, x_1, y_1)$. Saab näidata (peatükk \ref{chapter:forw_back}, valem \ref{eq:inhomog_markov}), et fikseeritud $\bm{y}\in \mathcal{Y}^T$ korral on tinglik protsess $(\bm{X},\bm{U})|\bm{y}$ mittehomogeene paarikaupa Markovi ahel üleminekujaotusega $p(u_k, x_k | u_{k-1}, x_{k-1}, \bm{y})$ ning algjaotusega $p(u_1,x_1|\bm{y})$. //Mittehomogeense PMMi üleminekujaotused leiab võrdlemisi efektiivselt edasi-tagasi algoritmiga (peatükk/valem \textbf{TODO}).// //Ka iga mittehomogeense paarikaupa Markovi ahela saab teha homogeenseks kolmekaupa Markovi ahelaks [vt. \cite{Soop.2023} Näide 4].// Seega edaspidises vaatame kolmekaupa Markovi ahelate tingliku protsessi  $(\bm{X},\bm{U})|\bm{y}$ asemel mittehomogeenseid paarikaupa Markovi ahelaid $(\bm{X'},\bm{U'})$.
+
+
+\textcolor{red}{See peatükk pole päris korrektne ja toodud tähistusi edaspidi ei kasutata, jäta üldine definitsioon välja ja defineeri vaid diskreetsel juhul (kus sa hiljem kasutad üldist PMMi, st sellist, kus $X$ või $U$ pole diskreetsed?)}
+\subsection{Ülesande ja lähendite kirjeldus}
+
+
+Olgu meil lõplikul olekute ruumil defineeritud mittehomogeene paarikaupa Markovi ahel $(\bm{X},\bm{U})$. Ülesandeks on leida $\bm{x}^* \in \mathcal{X}^T$, mis maksimiseerib tõenäosust 
+\begin{equation}\label{problem_def}
+    p(\bm{x})=\sum_{\bm{u} \in \mathcal{U}^T}{p(\bm{x}, \bm{u})}.
+\end{equation}
+\textcolor{red}{Kas $p(\bm{x}, \bm{u})$ on sama, mis $P(\bm{x}, \bm{u})$ (allpool) ? Miks erinevad tähed?}
+
+
+Sellist $\mathbf{x}^*$ nimetatakse \textbf{Viterbi rajaks}. On võimalik näidata \parencite{LYNGSO2002545}, et Viterbi raja leidmine on NP-raske ülesanne. Viterbi raja otsimise asemel asendame tõenäosuse \eqref{problem_def} maksimiseerimise mõne teise optimiseerimisülesandega, mis on arvutuslikult efektiivselt lahendatav ning mille lahendil on loodetavasti Viterbi rajale lähedane tõenäosus. Selles töös kasutame Viterbi raja lähendamiseks  variatsioonilisi meetodeid. Töö koosneb kahe algoritmi kirjeldamisest.
 \begin{enumerate}
-    \item Esimeses \emph{belief propagation} (BP) algoritmis leiame tõenäosusmõõdu $Q(\bm{u}, \bm{x}) = Q(\bm{x})Q(\bm{u})$, mis oleks hea lähend jaotusele $P(\bm{u},\bm{x} | \bm{y})$ KL kauguse mõttes, ning seejärel kasutame Viterbi algoritmi üle mõõdu $Q(\bm{x})$, et saada Viterbi raja hinnang $\bm{x}^*$.
-    \item Teises \emph{variational message passing} (VMP) algoritmis nõuame ajalist sõltumatust tõenäosusmõõdus $Q(\bm{u}, \bm{x}) = \prod_{t=1}^T Q(x_t,u_t)$ ning samuti minimiseerime KL kaugust jaotuse $P(\bm{u},\bm{x} | \bm{y})$ suhtes. Viterbi raja lähendi leiame $x_t^* = \argmax_{x_t} \sum_{u_t} Q(x_t,u_t)$ abil iga $t$ korral.
+    \item Esimeses \emph{belief propagation} (BP) algoritmis leiame tõenäosusmõõdu $Q(\bm{u}, \bm{x}) = Q(\bm{x})Q(\bm{u})$, mis oleks hea lähend jaotusele $p(\bm{u},\bm{x})$ KL kauguse mõttes, ning seejärel kasutame Viterbi algoritmi üle mõõdu $Q(\bm{x})$, et saada Viterbi raja hinnang $\bm{x}^*$.
+    \item Teises \emph{variational message passing} (VMP) algoritmis nõuame ajalist sõltumatust tõenäosusmõõdus $Q(\bm{u}, \bm{x}) = \prod_{t=1}^T Q(u_t,x_t)$ ning samuti minimiseerime KL kaugust jaotuse $P(\bm{u},\bm{x} | \bm{y})$ suhtes. Viterbi raja lähendi leiame $x_t^* = \argmax_{x_t} \sum_{u_t} Q(x_t,u_t)$ abil iga $t$ korral.
 \end{enumerate}
 
-KL kauguse kuju on
-$$KL[Q(\bm{u}, \bm{x}) \ ||\ P(\bm{u}, \bm{x} | \bm{y})] = \sum_{\bm{x} \in \mathcal{X}^T, \bm{u} \in \mathcal{U}^T} Q(\bm{u}, \bm{x}) \ln \frac{Q(\bm{u}, \bm{x})}{P(\bm{u}, \bm{x} | \bm{y})}.$$
-Selline ebatavaline Kullback Leibler kauguse kuju, kus optimiseeritav jaotus on hoopis esimene argument, on tähtis, et meetod oleks arvutuslikult efektiivne. 
+KL kaugus, mida töös minimiseerime, on
+$$\DKL[Q(\bm{u}, \bm{x}) \ ||\ P(\bm{u}, \bm{x} | \bm{y})] = \sum_{\bm{x} \in \mathcal{X}^T, \bm{u} \in \mathcal{U}^T} Q(\bm{u}, \bm{x}) \ln \frac{Q(\bm{u}, \bm{x})}{P(\bm{u}, \bm{x} | \bm{y})}.$$
+\textcolor{red}{Kirjuta optimiseerimisülesanne formaalselt välja. Et oleks selge, üle mille optimiseeritakse}
+
+Selline ebatavaline Kullback Leibler kauguse kuju
+\textcolor{red}{KL kauguses pole midagi ebatavalist}, kus optimiseeritav jaotus on hoopis esimene argument, on tähtis, et meetod oleks arvutuslikult efektiivne. Nii on meil algoritmides võimalik kasutada edasi-tagasi ja Viterbi algoritmi. Peatükis \ref{sec:theory_approximating_marginals} uurime põgusalt, miks marginaalide lähendamine on raske. \textcolor{red}{Mis on marginaalide lähendamine?}
 
 Edasi kirjutame 
 \begin{align}
     \label{eq:kl}
-    KL[Q(\bm{u}, \bm{x}) \ ||\ P(\bm{u}, \bm{x} | \bm{y})] &= - \sum_{\bm{u}, \bm{x}} Q(\bm{u}, \bm{x}) \left( \ln \frac{P(\bm{u}, \bm{x}, \bm{y})}{Q(\bm{u}, \bm{x})} - \ln P(\bm{y}) \right) \\
+    \DKL[Q(\bm{u}, \bm{x}) \ ||\ P(\bm{u}, \bm{x} | \bm{y})] &= - \sum_{\bm{u}, \bm{x}} Q(\bm{u}, \bm{x}) \left( \ln \frac{P(\bm{u}, \bm{x}, \bm{y})}{Q(\bm{u}, \bm{x})} - \ln P(\bm{y}) \right) \\
     \nonumber
-    &= - \sum_{\bm{u}, \bm{x}} \left( Q(\bm{u}, \bm{x}) \ln \frac{P(\bm{u}, \bm{x}, \bm{y})}{Q(\bm{u}, \bm{x})}\right) - \ln P(\bm{y}).
+    &= \ln P(\bm{y}) - \sum_{\bm{u}, \bm{x}} \left( Q(\bm{u}, \bm{x}) \ln \frac{P(\bm{u}, \bm{x}, \bm{y})}{Q(\bm{u}, \bm{x})}\right).
 \end{align}
 
 Defineerime nüüd
 \begin{equation}
 \label{eq:elbo}
-L[Q(\bm{u}, \bm{x})] = \sum_{\bm{u}, \bm{x}} \left( Q(\bm{u}, \bm{x}) \ln \frac{P(\bm{u}, \bm{x}, \bm{y})}{Q(\bm{u}, \bm{x})}\right)
+L[Q(\bm{u}, \bm{x})] := \sum_{\bm{u}, \bm{x}} \left( Q(\bm{u}, \bm{x}) \ln \frac{P(\bm{u}, \bm{x}, \bm{y})}{Q(\bm{u}, \bm{x})}\right)
 \end{equation}
 
-ning saame, et KL kauguse $KL[Q(\bm{u}, \bm{x}) || P(\bm{u}, \bm{x} | \bm{y})] = -L[Q(\bm{u}, \bm{x})] + \ln P(\bm{u}, \bm{x})$ minimiseerimiseks peame maksimiseerima suurust $L$, mille ingliskeelne lühend ELBO vastab mõistele \textit{evidence lower bound}. Kirjanduses kasutatakse ka mõistet \textit{variational free energy} sümboliga $F[Q, \bm{y}] := -L[Q, \bm{y}]$ \parencite{Parr.2019}. Funktsionaali L optimiseerimine võimaldab meil olla arvutuslikult efektiivsem, sest näiteks TMM mudelite puhul 
-$$\ln P(\bm{u}, \bm{x}, \bm{y}) = \ln P(u_1, x_1, y_1) + \sum_{t=2}^T \ln P(u_t, x_t, y_t | u_{t-1}, x_{t-1}, y_{t-1})$$
-on iga liidetav kergesti leitav, aga $\ln P(\mathbf{y})$ ei ole.
+ning saame, et KL kauguse $\DKL[Q(\bm{u}, \bm{x}) || P(\bm{u}, \bm{x} | \bm{y})] = -L[Q(\bm{u}, \bm{x})] + \ln P(\bm{y})$ minimiseerimiseks peame maksimiseerima suurust $L$, mille ingliskeelne lühend ELBO vastab mõistele \textit{evidence lower bound}. Kui optimaalne jaotus on $Q(\bm{u},\bm{x}) = P(\bm{u},\bm{x}| \bm{y})$, siis KL kaugus on $0$ ja saame $L[Q(\bm{u}, \bm{x})] = \ln P(\bm{y})$, kus $P(\bm{y})$ kutsutakse inglise keeles \emph{evidence}'iks ning ELBO õigustab oma nime. Kirjanduses kasutatakse ka mõistet \textit{variational free energy} (VFE) sümboliga $F[Q, \bm{y}] := -L[Q, \bm{y}]$ \parencite{Parr.2019}.
 
 Avaldame fikseeritud $\bm{y} \in \mathcal{Y}^T$ jaoks
 \begin{align}
     \label{eq:elbo1}
     L[Q(\bm{u}, \bm{x})] &=\sum_{\bm{u}, \bm{x}} Q(\bm{u}, \bm{x}) \ln P(\bm{u}, \bm{x}, \bm{y}) - \sum_{\bm{u}, \bm{x}} Q(\bm{u}, \bm{x}) \ln Q(\bm{u}, \bm{x})\\
     \label{eq:elbo2}
-    &= \left< \ln P(\bm{u}, \bm{x},\bm{y}) \right>_{Q(\bm{u}, \bm{x})} + H(Q(\bm{u}, \bm{x})),
+    &= \left< E (\bm{u}, \bm{x},\bm{y}) \right>_{Q(\bm{u}, \bm{x})} + H(Q(\bm{u}, \bm{x})),
 \end{align}
-kus suurust $E = \ln P$ kutsutakse energiaks ning $H$ on Shannoni entroopia. Edaspidi kasutame ebatavaliselt keskväärtuse tähistust $\left<  \cdot \right>$ ka mõõtude puhul, mis ei pruugi olla tõenäosusmõõdud, nagu on seda tehtud teistes töödes \parencite{Parr.2019}. ELBO (\ref{eq:elbo2}) on töös kesksel kohal maksimiseeritav väärtus.
+kus suurust $E = \ln P$ kutsutakse kirjanduses energiaks ning $H$ on Shannoni entroopia \textcolor{red}{Enroopia sõltub jaotusest, seega korrektne $H(Q)$}.. Matemaatilisest füüsikast inspireerituna kasutatakse tihti ka keskväärtuse tähistust $\left<  \cdot \right>$. Julia teek RxInfer kasutab mudeli headuse mõõtmiseks just suurust $F$.
 
-\subsection{Variatsiooniline meetod mõõdu parandamiseks}
+\subsection{Variatsiooniline meetod mõõdu parandamiseks}\label{sec:theory_variational_method}
 
-Fikseerime $T \in \mathbb{N}$. Olgu $\mathcal{X}$ ja $\mathcal{U}$ lõplikud tähestikud ja $P(\bm{u},\bm{x})$ olgu mingi hulgal $\mathcal{X}^T,\mathcal{U}^T$ antud tõenäosusmõõt. Olgu $\mathcal{P}(\mathcal{U})$ ja $\mathcal{P}(\mathcal{X})$ vastavalt hulgal $\mathcal{U}^T$ ja $\mathcal{X}^T$ antud kõikide tõenäosusmõõtude hulk. Suvalise paari $Q_x \in \mathcal{P}(\mathcal{X})$ ja $Q_u \in \mathcal{P}(\mathcal{U})$ korral olgu $Q_u \times Q_x$ korrutismõõt hulgal $\mathcal{U}^T \times \mathcal{X}^T$. Vaatleme optimiseerimisülesannet
+Fikseerime $T \in \mathbb{N}$. Olgu $\mathcal{X}$ ja $\mathcal{U}$ lõplikud tähestikud ja $P(\bm{u},\bm{x})$ olgu mingi hulgal $\mathcal{X}^T \times \mathcal{U}^T$ antud tõenäosusmõõt. Olgu $\mathcal{P}(\mathcal{U})$ ja $\mathcal{P}(\mathcal{X})$ vastavalt hulgal $\mathcal{U}^T$ ja $\mathcal{X}^T$ antud kõikide tõenäosusmõõtude hulk. Suvalise paari $Q_x \in \mathcal{P}(\mathcal{X})$ ja $Q_u \in \mathcal{P}(\mathcal{U})$ korral olgu $Q_u \times Q_x$ korrutismõõt hulgal $\mathcal{U}^T \times \mathcal{X}^T$. Vaatleme optimiseerimisülesannet
 \begin{equation}
     \label{eq:problem}
-    \min_{Q_u \times Q_x} D[Q_u \times Q_x || P],
+    \min_{Q_u \times Q_x} \DKL[Q_u \times Q_x || P],
 \end{equation}
 kus miinimum võetakse üle kõikide korrutismõõtude.
 
-Näitame, et see miinimum leidub. Selleks piisab meenutada, et diskreetsete tõenäosusmõõtude kaalud moodustavad $|\mathcal{U}|^T-1$ ja $|\mathcal{X}|^T -1$ dimensionaalsed simpleksid, mis on kompaktsed ruumid ja mille otsekorrutis on samuti kompaktne ruum. Et KL kaugus on teise argumendi järgi pidev. Funktsionaalanalüüsist on teada Weierstrassi teoreem, (\cite{Oja.1991}{ II peatükk §5}) mille põhjal ekstreemumid ka saavutatakse. Veel enam, et KL kaugus on teise argumendi järgi ka rangelt kumer, on lahend ka ühene. Kas on vaja KL kauguse joint convexity tuletuskäiku? \bla
+Näitame, et see miinimum leidub. Selleks piisab meenutada, et diskreetsete tõenäosusmõõtude kaalud moodustavad $|\mathcal{U}|^T-1$ ja $|\mathcal{X}|^T -1$ dimensionaalsed simpleksid, mis on kompaktsed ruumid ja mille otsekorrutis on samuti kompaktne ruum. KL kaugus on teise argumendi järgi pidev. Funktsionaalanalüüsist on teada Weierstrassi teoreem, (\cite{Oja.1991}{ II peatükk §5}) mille põhjal ekstreemumid ka saavutatakse.
 
-Järgmiseks uurime, kas mõõdu P marginaaljaotuste korrutis on ülesande (\ref{eq:problem}) lahendiks. Selleks piisab veenduda, et ühisjaotuse $ P = $ \bla korral.
 
-Selgitame miks on $Q_u, Q_x$ leidmine ülesande (\ref{eq:problem}) puhul raske. Selleks uurime, et kui otsida määramata kordajate meetodi jaoks juhusliku suuruse $\mathbf{U} \sim Cat(q_1,\ldots,q_{|\mathcal{U}|^T})$ puhul kriitilist kohta, kus 
-$$\frac{\partial}{\partial q_k} D[Q_u \times Q_x || P] = 0,$$
+\textcolor{red}{Lahend leidub. Aga kas ühene? Siia sobiks nüüd see jutt kumerusest jne. Siis on lugejal selge, et lahend leidub ja ühene.
+Ja siis järgmine küsimus -- kuidas seda leida?}
+
+
+
+Järgmiseks uurime, kas mõõdu P marginaaljaotuste korrutis on ülesande (\ref{eq:problem}) lahendiks. Toome kontranäite, et see nii ei ole. Vaatleme ühisjaotust $ P = [0.1, 0.2; 0.1, 0.6]$ (st $p(u=1,x=2)=0.2$), marginaale $P_u = [0.3, 0.7], P_x = [0.2, 0.8]$ ja mõõte $Q_u=P_u$, $Q_x = [0.19, 0.81]$. Leides KL kaugused näeme, et $\DKL[P_u \times P_x || P] > \DKL[Q_u \times Q_x || P]$. Kuigi leitud lähendid ei ole üldiselt marginaalid, võib selline lähenemine olla Viterbi raja leidmisel ikkagi hea, kuid selle hindamiseks kasutame eksperimente.
+
+
+Selgitame miks on $Q_u, Q_x$ leidmine ülesande (\ref{eq:problem}) puhul raske. \textcolor{red}{ \bf Selleks uurime, et kui otsida määramata kordajate meetodi jaoks juhusliku suuruse $\mathbf{X} \sim Cat(q_1,\ldots,q_{|\mathcal{X}|^T})$ puhul kriitilist kohta, kus 
+$$\frac{\partial}{\partial q_k} \DKL[Q_u \times Q_x || P] = 0,$$
 siis me saame leides tuletised võrrandi
-$$\left< 1 + \ln q_k - \ln p(\bm{u}, k) \right>_{Q_u} = 0,$$
-mis on meile probleemiks, sest $Q_u$ kaalud leiaksime analoogselt kasutades mõõtu $Q_x$. Sarnane probleem on motiveerivaks näiteks iteratiivse EM algoritmi tutvustamisel.
+$$1 + \ln q_k - \sum_{\bm{u}}Q_u(\bm{u})\ln p(\bm{u}, k) = 0,$$
+mis on meile probleemiks, sest $Q_u$ kaalud leiaksime analoogselt kasutades mõõtu $Q_x$.}
 
-Seepärast otsime ka meie iteratiivset algoritmi, kus me valime algjaotused 
-$$Q_u^{(0)} \in \mathcal{P}(\mathcal{U}), Q_x^{(0)} \in \mathcal{P}(\mathcal{X}), d_0 := D[Q_u^{(0)} \times Q_x^{(0)} || P]$$
+\textcolor{red}{See lõik on väga segane. Milleks juhuslik suurus $X$ (see on defineeritud, kuid ei kasutata kuskil), mis on $q_i$? jne. Kirjuta ümber või jäta välja.}
+
+Sarnane probleem on motiveerivaks näiteks iteratiivse \emph{expectation maximisation} ehk EM algoritmi tutvustamisel. \textcolor{red}{Ka see lause on väga segane ega ei ütle midagi. Arvatavasti tahad öelda järgmist -- et analüütiliselt on optimiseerimisülesannet (\ref{eq:problem}) vga keeruline (võimatu?) lahendada, siis tehakse seda iteratiivselt. Ja võiksid selgitada, mida iteratiivse algoritmi/lähendusviisi all silmas peetakse}.
+
+Iteratiivset algoritmi lähendite $Q_x, Q_u$ leidmiseks proovime ka meie luua.
+
+Kirjeldame, kuidas selline algoritm võiks käituda. Valime algjaotused 
+$$Q_u^{(0)} \in \mathcal{P}(\mathcal{U}), Q_x^{(0)} \in \mathcal{P}(\mathcal{X}), d_0 := \DKL[Q_u^{(0)} \times Q_x^{(0)} || P]$$
 ning seejärel leiame
 \begin{align*}
-    Q_u^{(i+1)} &= \argmin_{Q_u \in \mathcal{P}(\mathcal{U})} D[Q_u \times Q_x^{(i)} || P],& d_{2i -1} := D[Q_u^{(i+1)} \times Q_x^{(i)} || P] \\
-     Q_x^{(i+1)} &= \argmin_{Q_x \in \mathcal{P}(\mathcal{X})} D[Q_u^{(i+1)} \times Q_x || P],& d_{2i} := D[Q_u^{(i+1)} \times Q_x^{(i+1)} || P].
+    Q_u^{(i+1)} &= \argmin_{Q_u \in \mathcal{P}(\mathcal{U})} \DKL[Q_u \times Q_x^{(i)} || P],& d_{2i -1} := \DKL[Q_u^{(i+1)} \times Q_x^{(i)} || P] \\
+     Q_x^{(i+1)} &= \argmin_{Q_x \in \mathcal{P}(\mathcal{X})} \DKL[Q_u^{(i+1)} \times Q_x || P],& d_{2i} := \DKL[Q_u^{(i+1)} \times Q_x^{(i+1)} || P].
 \end{align*}
 
 Et iga $i>0$ korral $Q_u^{(i)} \in \mathcal{P}(\mathcal{U})$, siis
-$$ \argmin_{Q_u \in \mathcal{P}(\mathcal{U})} D[Q_u \times Q_x^{(i)} || P] \le D[Q_u^{(i)} \times Q_x^{(i)} || P]$$
-ja sarnaselt saame arutleda ka $Q_x$ puhul. Seepärast on iteratsioonidel leitavad mõõdud sellised, mis moodustavad KL kauguste mõttes monotoonselt mittekasvava jada $(d_k)$. Et KL kaugus on mittenegatiivne, on see jada alt tõkestatud ning koondub. Kuid piirjaotused ei pruugi olla ülesande (\ref{eq:problem}) lahendiks. Kontranäide, kus on püsipunkt, aga ei ole lahend. Ilmselt, kui on lahend, siis on ka püsipunkt. Samuti Jüri rääkis lõplikust arvust sammudest püsipunkti jõudmisest - kas selle näitamine realistlik? \bla
+$$ \argmin_{Q_u \in \mathcal{P}(\mathcal{U})} \DKL[Q_u \times Q_x^{(i)} || P] \le \DKL[Q_u^{(i)} \times Q_x^{(i)} || P]$$
+ja sarnaselt saame arutleda ka $Q_x$ puhul. Seepärast on iteratsioonidel leitavad mõõdud sellised, mis moodustavad KL kauguste mõttes monotoonselt mittekasvava jada $(d_k)$. Samaväärselt võiksime vaadata KL kauguste jada asemel ELBO (\ref{eq:elbo}) või vabaenergia $F$ väärtuste jada. Võime vaadelda iteratsioone kui kiireima languse meetodi (\emph{gradient descent}) erijuhtu. Et KL kaugus on mittenegatiivne, on see jada alt tõkestatud ning koondub. \textcolor{red}{Kas piirväärtus on optimeerimisülesande lahend? Kas lahend on algoritmi püsipunkt?}
 
-Kas me 3.1.1 peatükis näitame, et kui me alustame mõõtudega, mis on Markovi omadusega, siis on ka uuel iteratsioonil selline omadus? Või on see lisaeeldus kuskil? \bla
-
-Näitame, kuidas selline lokaalsesse miinimumi jõudmise algoritm käitub. Fikseerime $i$ korral $Q_x := Q_x^{(i)}$ ning minimiseerime funktsionaali $Q_u \mapsto D[Q_u \times Q_x || P]$:
+Järgmiseks uurime, mis tingimustel on KL kaugus esimese argumendi, st $Q_u \times Q_x$, järgi rangelt kumer. Selleks meenutame, et KL kaugus on lõpmatu, kui leiduvad $\bm{u},\bm{x}$ nii, et $P(\bm{u},\bm{x}) = 0$ ning $Q_u(\bm{u})Q_x(\bm{x}) > 0$. Oleme näidanud \textcolor{red}{kuskohal ?}, et KL kaugus on lõplik, kui $\supp Q_u \times Q_x \subseteq \supp P$, mille tulemusena uurime väiksemate dimensioonidega simplekseid \textcolor{red}{Mida see tähendab? Millest väiksemate dimensioonidega?}. Mittetriviaalselt eeldame, et selliste simpleksite korrutis ei ole tühihulk. Nüüd näitame, et KL kaugus on rangelt kumer, kus see on lõplik, ehk iga $Q_u\times Q_x, \Tilde{Q}_u\times \Tilde{Q}_x$ korral, kus $Q_u\times Q_x \ne \Tilde{Q}_u\times \Tilde{Q}_x$ ja $\DKL[Q_u \times Q_x || P]$, $\DKL[\Tilde{Q}_u \times \Tilde{Q}_x|| P]$ on lõplikud kehtib
 \begin{align*}
-     D[Q_u \times Q_x || P] &= \sum_{\bm{u},\bm{x}} Q_u(\bm{u}) Q_x(\bm{x}) \left( \frac{Q_u(\bm{u}) Q_x(\bm{x})}{P(\bm{u},\bm{x})} \right) \\
-     &= -H[Q_x] + \sum_{\bm{u}}Q_u(\bm{u}) \ln Q_u(\bm{u}) - \sum_{\bm{u}}Q_u(\bm{u}) \ln P(\bm{u},\bm{x}),
+\label{ineq:strong_convexity}
+\DKL[\lambda (Q_u\times Q_x) + (1-\lambda) (\Tilde{Q}_u\times \Tilde{Q}_x) || P] < \lambda \DKL[Q_u\times Q_x  || P] + (1 - \lambda) \DKL[\Tilde{Q}_u\times \Tilde{Q}_x || P].
 \end{align*}
-kus defineerime iga $\bm{u}$ korral
+Piisab meenutada, et mittenegatiivsete arvude $a_1,\ldots,a_n, a:=\sum_{k=1}^n a_k, b_1,\ldots,b_n, b:=\sum_{k=1}^n b_k$ korral kehtib logaritmide summa võrratus
+$$ a \ln \frac{a}{b} \le \sum_{k=1}^n a_k \ln \frac{a_k}{b_k}, $$
+kus võrdus kehtib vaid juhul, kui leidub $c$ nii, et $a_k \equiv cb_k$. Saame soovitud kuju kui logaritmide argumendid korrutada liikmega $\frac{\lambda}{\lambda}$ või $\frac{1-\lambda}{1-\lambda} $ ja kirjutada iga $\bm{u},\bm{x}$ korral
+\begin{align*}
+    & \left( \lambda Q_u(\bm{u})Q_x(\bm{x}) + (1-\lambda) \Tilde{Q}_u(\bm{u})\Tilde{Q}_x(\bm{x}) \right) \ln \frac{\lambda Q_u(\bm{u})Q_x(\bm{x}) + (1-\lambda) \Tilde{Q}_u(\bm{u})\Tilde{Q}_x(\bm{x}) }{\lambda P(\bm{u},\bm{x}) + (1-\lambda)P(\bm{u},\bm{x})}\\
+    &\le \lambda Q_u(\bm{u})Q_x(\bm{x}) \ln \frac{\lambda Q_u(\bm{u})Q_x(\bm{x})}{\lambda P(\bm{u},\bm{x})} + (1-\lambda)\Tilde{Q}_u(\bm{u})\Tilde{Q}_x(\bm{x}) \ln \frac{(1-\lambda) \Tilde{Q}_u(\bm{u})\Tilde{Q}_x(\bm{x})}{(1-\lambda)P(\bm{u},\bm{x})},
+\end{align*}
+kusjuures et $Q_u\times Q_x \ne \Tilde{Q}_u\times \Tilde{Q}_x$, siis leiduvad $\bm{u},\bm{x}$ nii, et eelmine võrratus on range.
+
+Nüüd on näha, et ei leidu lokaalseid miinimumkohti, mis erineksid globaalsest miinimumkohast. \textcolor{red}{Kas kumera funktsiooni korral saab üldse lokaalseid miinimume olla?} Selleks oletame vastuväiteliselt, et leidub lokaalne miinimumkoht $Q_u, Q_x$, mis erineb globaalselt miinimumkohast $Q_u', Q_x'$. Paneme tähele, et $\DKL[Q_u', Q_x' || P] \le \DKL[Q_u, Q_x||P]$ ja kirjutame
+\begin{align*}
+    \DKL[\lambda Q_u\times Q_x + (1-\lambda) Q'_u\times Q'_x || P] &< \lambda \DKL[Q_u\times Q_x  || P] + (1 - \lambda) \DKL[Q'_u\times Q'_x || P]\\
+    &< \lambda \DKL[Q_u\times Q_x  || P] + (1 - \lambda) \DKL[Q_u\times Q_x || P]\\
+    &= \DKL[Q_u\times Q_x || P]
+\end{align*}
+ja näeme, et kuna range võrratus kehtib iga $\lambda \in (0,1)$ korral, siis meil on $Q_u,Q_x$ korral võimalik leida igas ümbruses jaotus $\lambda (Q_u\times Q_x) + (1-\lambda) (Q'_u\times Q'_x) $, mille KL kaugus on väiksem ja oleme vastuolus eeldusega, et $Q_u,Q_x$ on lokaalne miinimumkoht.
+
+Näitame, kuidas selline miinimumi leidmise algoritm käitub. \textcolor{red}{algoritmi käitumine on saadud lähendite jada käitumine. Praegu uurid kuidas leida $$ \argmin_{Q_u \in \mathcal{P}(\mathcal{U})} \DKL[Q_u \times Q_x^{(i)} || P] $$ }
+
+
+Fikseerime $i$ korral $Q_x := Q_x^{(i)}$ ning minimiseerime funktsionaali $Q_u \mapsto \DKL[Q_u \times Q_x || P]$:
+\begin{align*}
+     \DKL[Q_u \times Q_x || P] &= \sum_{\bm{u},\bm{x}} Q_u(\bm{u}) Q_x(\bm{x}) \ln\left( \frac{Q_u(\bm{u}) Q_x(\bm{x})}{P(\bm{u},\bm{x})} \right) \\
+     &= -H[Q_x] + \sum_{\bm{u}}Q_u(\bm{u}) \ln Q_u(\bm{u}) - \sum_{\bm{u}}Q_u(\bm{u})\textcolor{red}{\sum_{\bm{x}}Q_x(\bm{x})}  \ln P(\bm{u},\bm{x}).
+\end{align*}
+Nüüd defineerime iga $\bm{u}$ korral
 $$Q^*(\bm{u}) := \exp \left( \sum_{\bm{x}} Q_x(\bm{x}) \ln P(\bm{u},\bm{x}) \right).$$
-Paneme tähele, et iga $\bm{u}$ korral $Q^*(\bm{u}) \in [0,1]$. Üldiselt ei ole mõõt $Q^*$ tõenäosusmõõt, aga näitame, et see ei ole nullmõõt, et me saaks hiljem seda normaliseerida. 
+Paneme tähele, et iga $\bm{u}$ korral $Q^*(\bm{u}) \in [0,1]$. Üldiselt ei ole mõõt $Q^*$ tõenäosusmõõt, aga uurime, mis tingimused tagavad, et see ei ole nullmõõt, et me saaks hiljem seda normaliseerida. Ehk mis tingimustel leidub $\bm{u}$ nii, et $Q^*(\bm{u}) > 0$.
 
-\subsection{Marginaalide lähendamine}
+Kui iga $\bm{u}, \bm{x}$ korral $P(\bm{u},\bm{x}) > 0$, siis suvalise $\bm{u}$ korral saame valida minimaalse $r:=\min_{\bm{x}}\ln P(\bm{u},\bm{x}) \textcolor{red}{> -\infty}}$, maksimaalse $s := \max_{\bm{x}}Q_x(x)$ ja selle abil anda $Q^*(\bm{u})$ alumise hinnangu anda kui
+$$Q^*(\bm{u}) \ge \exp \left( |\mathcal{X}| rs \right) > 0.$$
+\textcolor{red}{Oletame nüüd, et} leiduvad $\bm{u}, \bm{x}$ nii, et $P(\bm{u},\bm{x}) = 0$. KL kauguse minimiseerimise huvides soovime, et KL kaugus oleks lõplik ehk sellisel juhul ka $Q(\bm{u})Q(\bm{x}) = 0$. Sellest motiveerituna kirjutame edaspidi, et
+$\exp \left[ z_1\ln 0 + z_2 \right] = 0$ iga $z_1 > 0, z_2 \in \mathbb{R}$ jaoks. Nüüd kui iga $\bm{u}$ korral leidub $\bm{x}$ nii, et $P(\bm{u},\bm{x}) = 0$, siis on $Q^*$ nullmõõt. \textcolor{red}{Kust see tuleb? Kui $Q_x(x)=0$ ja $P(u,x)=0$, siis $0 \ln (0)=0$.}
 
-Uurime, kas me saame Viterbi rada leida, lähendades marginaale traditsioonilisema KL kauguse kuju $D[P || Q_u \times Q_x]$ minimiseerimisega. Näitame, et kuigi marginaliseerimine pole kitsendusteta üldiselt realistlik, siis nõudes eeldades $Q_u, Q_x$ Markovi omadust, on võimalik iteratiivne algoritm siiski luua.
+Hajusate üleminekumaatriksitega võib seda probleemi ette tulla ning programmeerimisteekides kasutatakse suuruste lõplikkuse huvides \emph{clamplog} funktsiooni \parencite{Bagaev.2022}, \textcolor{red}{Segane -- mida see funktsioon teeb? Selgita või jäta lause välja   }millele me töös tähelepanu ei suuna. Me eeldame, et üleminekumaatriks on piisavalt tihe ehk alati leidub $\bm{u}$ nii, et iga $\bm{x}$ jaoks $P(\bm{u},\bm{x}) > 0$. \textcolor{red}{Õigem oleks vist: leidub $u$ nii, et iga $x$ korral ...}
 
+Nüüd saame defineerida $Z := \sum_{\bm{u}}Q_u^*(\bm{u}) > 0$ ning $\Bar{Q}_u(\bm{u}) = 1/Z \ Q^*_u(\bm{u})$, kusjuures $\Bar{Q}_u$ on tõenäosusmõõt. Kirjutame KL kauguse kui
+$$\DKL[Q_u \times Q_x || P] = -H[Q_x] + \sum_{\bm{u}} Q_u(\bm{u}) \ln \frac{Q_u(\bm{u})}{Z \Bar{Q}(\bm{u})} = -H[Q_x] - \ln Z + \DKL[Q_u || \Bar{Q}_u],$$
+kusjuures jaotus $Q_x$, konstant $Z$ ja $\Bar{Q}_u$ ei sõltu mõõdust $Q_u$, seega minimiseerimine on samaväärne $\DKL[Q_u || \Bar{Q}_u]$ minimiseerimisega. Et KL kaugus on mittenegatiivne ja $0$ parajasti siis, kui mõõdud on võrdsed, siis minimiseeriv jaotus ongi $\Bar{Q}_u$. Saame kirjutada
+$\ln Q_u^{(i+1)} = \sum_{\bm{x}}Q(\bm{x}) \ln P(\bm{u},\bm{x}) + c^{(i+1)}$ või
+\begin{equation}
+    \label{eq:general_update}
+    \Bar{Q}_u(\bm{u}) = \frac{1}{Z} \exp \left( \sum_{\bm{x}} Q_x(\bm{x}) \ln P(\bm{u},\bm{x}) \right),\ Z = \sum_{\bm{u}}\exp \left( \sum_{\bm{x}} Q_x(\bm{x}) \ln P(\bm{u},\bm{x}) \right).
+\end{equation}
+\textcolor{red}{Kuidas on seotud $Z$ ja  $c^{(i+1)}$?}
+\subsection{Marginaalide lähendamine}\label{sec:theory_approximating_marginals}
+
+Uurime, kas me saame Viterbi rada leida, lähendades marginaale traditsioonilisema KL kauguse kuju $\DKL[P || Q_u \times Q_x]$ minimiseerimisega. 
+
+\textcolor{red}{Jälle väga segane lause -- mis on KL traditsiooniline kuju? Ilmselt tahad öelda, et mis juhtub kui optimiseerimisülesandes KL- kauguse argumendid ära vahetada?}
+
+
+Näitame, et marginaalide leidmine on raske ning lihtsamad iteratiivsed algoritmid ei koondu marginaalideks.
+
+\textcolor{red}{Mida tähendab "marginaalide leidmine"? Mida tähendab "iteratiivsed algoritmid ei koondu marginaalideks?"}
 Lahendame ülesannet
 \begin{equation}
     \label{eq:alt_problem}
-    \min_{Q_u \times Q_x} D[P || Q_u \times Q_x]
+    \min_{Q_u \times Q_x} \DKL[P || Q_u \times Q_x]
 \end{equation}
-ning näitame, et lahend tõepoolest on marginaaljaotuste korrutis. Selleks kirjutame
-$$ D[P || Q_u \times Q_x] = \sum_{\bm{u}, \bm{x}} P(\bm{u},\bm{x}) \left( \ln P_x(\bm{x}) - \ln Q_u(\bm{u}) - \ln Q_x(\bm{x}) \right) $$
+ning näitame, et lahend tõepoolest on \textcolor{red}{$P(u,x)$} marginaaljaotuste korrutis. \textcolor{red}{Defineeri $P_x$ ja $P_u$}.Selleks kirjutame
+$$ \DKL[P || Q_u \times Q_x] = \sum_{\bm{u}, \bm{x}} P(\bm{u},\bm{x}) \left( \ln \textcolor{red}{P(\bm{u},}\bm{x}) - \ln Q_u(\bm{u}) - \ln Q_x(\bm{x}) \right) $$
 ja otsime nt minimiseerivat $Q_x$. Kirjutame
 $$
 -\sum_{\bm{u}, \bm{x}} P(\bm{u},\bm{x}) \ln Q_x(\bm{x}) = -\sum_{\bm{x}} P_x(\bm{x}) \frac{\ln Q_x(\bm{x}) P_x(\bm{x})}{P_x(\bm{x})} = H[P_x] + KL[P_x||Q_x]
 $$
-ja et KL kaugus on $0$ parajasti siis, kui kaks jaotust on võrdsed, saamegi ülesande (\ref{eq:alt_problem}) lahendiks $Q_x$ marginaaljaotuse $P_x$. Argumenteerime $Q_u$ puhul analoogselt. 
-
-Järgmisena näitame, et kuigi nii on teoreetiliselt võimalik marginaale leida, ei ole need üldiselt meie mudelites Markovi omadusega, mispärast ei saa rakendada Viterbi algoritmi Viterbi raja leidmiseks, ja ülesanne on endiselt NP raske. \bla
+ja et KL kaugus on $0$ parajasti siis, kui kaks jaotust on võrdsed, saamegi ülesande (\ref{eq:alt_problem}) lahendiks $Q_x$ marginaaljaotuse $P_x$. Argumenteerime $Q_u$ puhul analoogselt. \textcolor{red}{Siin oleks vaja veenduda, et selle optimieerimisülesande lahendamist võib teha $Q_x$ ja $Q_u$ järgi eraldi.}
 
 
+Kuigi on teoreetiliselt võimalik marginaale leida, ei ole need üldiselt meie mudelites Markovi omadusega, mispärast ei saa rakendada Viterbi algoritmi Viterbi raja leidmiseks, ja ülesanne on endiselt NP-raske. 
+
+\textcolor{red}{Seega põhimõtteliselt on (\ref{eq:alt_problem}) lahendamine õigem kui (\ref{eq:problem}) lahendamine, sest
+(\ref{eq:alt_problem}) lahendid on $P_x$ ja $P_u$. Kuid nii oleme jõudnud tagasi algse ülesandeni. Kuid mille poolest on ülesande (\ref{eq:problem}) lahend, olgu see $Q_x$, parem? Isegi kui seda on kergem optimeerida, siis mis garanteerib, et saame hea lähendi Viterbi rajale?}
+
+
+
+
+
+Varasemalt on uuritud erinevaid algoritme, et marginaale lähendada \parencite{Soop.2023}.
+\textcolor{red}{Oskar ei lähennud mõõte vaid pigem ikka Viterbi rada. 
+\\\\
+See, mis nüüd järgneb, on väga segane. Mida teed ja miks?}
+
+Initsialiseerime mõõdud $Q_u^{(0)} \in \mathcal{P}(\mathcal{U}), Q_x^{(0)} \in \mathcal{P}(\mathcal{X})$. Fikseerime $Q_u := Q_u^{(i)}$ ning optimeerime \begin{equation}
+    \label{eq:weird_kl}
+    Q_x \mapsto \DKL\left[\frac{1}{A}\sum_{\bm{u}} P(\bm{x} | \bm{u}) Q_u(\bm{u})\ ||\ Q_x(\bm{x})\right],
+\end{equation}
+kus $A = \sum_{\bm{u},\bm{x}} P(\bm{x}|\bm{u}) Q_u(\bm{u})$ ja $Q_u$ on lähend marginaalile $P_u$. Teadagi on selle lahend 
+$$\Bar{Q}_x(\bm{x}) = \frac{1}{A}\sum_{\bm{u}} P(\bm{x}|\bm{u})Q_u(\bm{u}).$$ 
+Siit saame samuti tuletada iteratiivse algoritmi, kus järgmisel sammul optimiseerime \textcolor{red}{Kas valemis (\ref{eq:weird_kl2}) $Q_x$ on $\Bar{Q}_x$? Kui ja, siis tee see lugejale selgeks. }
+\begin{equation}
+    \label{eq:weird_kl2}
+    Q_u \mapsto \DKL\left[\frac{1}{A'}\sum_{\bm{x}} P(\bm{u} | \bm{x}) Q_x(\bm{x})\ ||\ Q_u(\bm{u})\right],
+\end{equation}
+kus $A'$ on jällegi normaliseeriv konstant.
+
+\textcolor{red}{Kas see iteratiivne algoritm, mille välja pakud, ikka minimiseerib (\ref{eq:alt_problem}) ?}
+
+
+
+Saame kirjutada $Q_x^{(2)} = \Bar{Q}_x$ ja seejärel leida analoogselt $\Bar{Q}_u$. Lihtne on näha, et kui $Q_u, Q_x$ on (\ref{eq:alt_problem}) lahendid, siis need on ka (\ref{eq:weird_kl}), (\ref{eq:weird_kl2}) lahendid, mispärast ei pruugi need olla Markovi omadusega. 
+
+\emph{(Järgnev peaks minema mujale peatükki, sest siin me otseselt Markovi ahelatega veel ei tegele.)}
+
+Isegi kui me alustame jälle Markovi ahelatega, siis see omadus ei pruugi säilida. Olgu $Q_u(u_t |u_{1:t-1}) = Q_u(u_t|u_{t-1})$.  Näitame enne, et $P(\bm{u}|\bm{x})$ on Markovi ahel. Selleks kirjutame \textcolor{red}{Kas $P$ või $p$?}
+\begin{align*}
+    p(x_t | u_{1:t},x_{1:t-1}) &= \frac{p(x_t,u_t|u_{1:t-1},x_{1:t-1})}{\sum_{x_t}p(x_t,u_t|u_{1:t-1},x_{1:t-1})} \\ &= \frac{p(x_t,u_t|u_{t-1},x_{t-1})}{\sum_{x_t}p(x_t,u_t|u_{t-1},x_{t-1})} \\
+    &= \frac{p(x_t,u_t|u_{t-1},x_{t-1})}{p(u_t|u_{t-1},x_{t-1})} \\
+    &=  p(x_t|u_t,u_{t-1},x_{t-1}).
+\end{align*}
+Nüüd üldiselt \textcolor{red}{Kas $P$ või $p$?}
+\begin{align*}
+    A \Bar{Q}_x(\bm{x}) &=\sum_{u_1} P(x_1|u_1)Q_u(u_1) \sum_{u_2} P(x_2|u_2,u_1,x_1)Q(u_2|u_1)\sum_{u_3}\ldots \\
+    &\ne \sum_{u_1}P(x_1|u_1) Q_u(u_1)\prod_{t=2}^T \sum_{u_t,u_{t-1}}P(x_t|u_t,u_{t-1},x_{t-1})Q_u(u_t|u_t-1{}).
+\end{align*}
+
+\textcolor{red}{Kas see viimane avaldus on Markovi omadus? Markovi omadus tõepoolest tähendab, et  $\Bar{Q}_x(\bm{x})$ faktoriseerub
+$$\Bar{Q}_x(\bm{x})=f_1(x_1)f_2(x_1,x_2)f_3(x_2,x_3)\cdots f_T(x_{T-1},x_T),$$
+aga peaksid näitama, et see on ekvivalentne sellega, mis sul seal viimases avaldises.}
+
+Kontranäitena võime vaadelda mõõte $Q_u$, kus $Q_u(u_1), Q_u(u_t|u_{t-1})$ on kõik ühtlase jaotusega ning $p(u_t,x_t|u_{1:t-1},x_{1:t-1}) = p(u_t|x_{t-1})p(x_t|u_{t-1})$. Näeme, et
+$\Bar{Q}_x(x_t|x_{t-1},x_{t-2}) = \Bar{Q}_x(x_t|x_{t-2}) \ne \Bar{Q}(x_t|x_{t-1}) = \Bar{Q}(x_t).$
+Me võime siiski leida esimest järku Viterbi rajasid ja uurida, kuidas nad käituvad võrreldes variatsiooniliste algoritmidega. \bla
+
+Sarnast probleemi variatsiooniliste mõõtudega ei juhtu. \textcolor{red}{Mis on variatsioonilised mõõdud? Defineeri! Kas alljärgnev 
+$\Bar{Q}_x$ on midagi muud kui ülevalpool olev? Kui ja, siis selgita lugejale.}
+
+Samade jaotuste puhul
+\begin{align*}
+\ln \Bar{Q}_x(\bm{x}) &= \left<\ln P(\bm{u},\bm{x})\right>_{Q_u} = \left<\ln P(u_1,x_1) + \sum_{t=2}^T \ln P(u_t | x_{t-1}) + \ln P(x_t | u_{t-1}))\right>_{Q_u} \\
+&= \left< \ln P(u_1,x_1) \right>_{Q_{u_1}} + \sum_{t=2}^T \left< \ln P(u_t|x_{t-1}) \right>_{Q_{u_t}} + \left< \ln P(x_t|x_{u-1}) \right>_{Q_{u_{t-1}}}
+\end{align*}
+ja
+$$\ln \Bar{Q}_x(x_t|x_{1:t-1}) = \left< \ln P(u_t | x_{t-1}) \right>_{Q_{u_t}} + \left< \ln P(x_t | u_{t-1}))\right>_{Q_{u_{t-1}}} = \Bar{Q}_x(x_t|x_{t-1}).$$

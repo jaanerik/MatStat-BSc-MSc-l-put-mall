@@ -1,8 +1,14 @@
-\section{Eksperimendid}
-
+\section{Eksperimendid}\label{sec:experiments}
+\textcolor{blue}{Kui jääb aega \textbf{ToDo}:
+\begin{itemize}
+    \item PMAP (Oskari magistri töös nimetatakse seda ka 0-Viterbiks) leiab iga $t$ korral $\argmax p(x_t)$. Selle saab leida lihtsasti edasi-tagasi algoritmiga. Oleks tore seda võrrelda VMP algoritmist saadud lähendiga, sest nad mõlemad mingis mõttes kaotavad ajalised sidemed ära.
+    \item Vaata VMP algoritmi üldistust, kus $\prod_t Q_t(w_t)$ asemel vaatad $$Q_1(w_1)Q_2(w_1,w_2)\cdots Q_T(w_{T-1},w_T).$$
+    Kiire häkk selle implementeerimiseks on, et originaalse üleminekumaatriksi $p(w_t|w_{t-1})$ asemel vaatad üleminekumaatriskit $p((w_t,w_{t-1})|(w_{t-1},w_{t-2}))$ ja rakendad sellele VMP algoritmi. Huvitav on sellele üleminekumaatriksile ka PMAPi rakendada (oleks sama kui 1-Viterbi).
+\end{itemize}
+}
 Eksperimentide koostamiseks, mille abil uurida VMP ja BP algoritmide headust, on mitmeid viise. 
 
-Esimesel juhul uurime $N$ mudelit ja andmestikku, mis on genereeritud võrdlemisi väikese $T \in \{10,15,20\}$ korral, et oleks mõistlikku ajaga võimalik läbi vaadata kõik võimalikud Viterbi rajad. Nii on võimalik täpselt leida,
+Esimesel juhul uurime $N$ mudelit ja andmestikku, mis on genereeritud võrdlemisi väikese $T \in \{10,15,20\}$ korral, et oleks mõistlikku ajaga võimalik leida õiged Viterbi rajad. Nii on võimalik täpselt leida,
 \begin{itemize}
     \item kui kaugele optimumist on jäänud töös kirjeldatud algoritmidega leitud rajad logtõenäosuse vahena,
     \item mis on leitud rajade protsentiilid, ja
@@ -12,7 +18,7 @@ Kui Hammingu kaugus on enamasti väike, siis see annaks alust loota, et leides k
 
 Vaatleme eksperimentides kaht mudelit. 
 
-\subsection{Paarikaupa varjatud tunnusega Markovi ahel}
+\subsection{Paarikaupa varjatud tunnusega Markovi ahel}\label{sec:experiments_PMM}
 
 Esimene on paarikaupa varjatud tunnusega Markovi ahel (\ref{eq:model1_1}), (\ref{eq:model1_2}), (\ref{eq:model1_3}). Üleminekumaatriks on genereeritud Dirichlet' jaotusest parameetritega $1,\ldots,1$ ehk iga $u_{t-1},x_{t-1}$ korral on elemendiviisiliselt jaotus kirjeldatav kui
 \begin{align}
@@ -30,7 +36,7 @@ Sellise mudeli puhul on võrdluseks kasutatud ka naiivset algoritmi, mis seab $x
 
 \subsubsection{Eksperimendid väikese $T$ korral}
 
-Uuritava mudeli korral on algoritmide tulemused paljulubavad ning paistavad üksteist komplementeerivat: $T=20,N=50$ korral oli näha, et $25$ juhul saavutab BP parema raja ning $16$ juhul VMP; $T=15,N=100$ korral oli BP algoritm $43$ juhul parem, VMP $35$ juhul parem.
+Uuritava mudeli korral paistavad kaks algoritmi üksteist komplementeerivat: $T=20,N=50$ korral oli näha, et $25$ juhul saavutab BP parema raja ning $16$ juhul VMP; $T=15,N=100$ korral oli BP algoritm $43$ juhul parem, VMP $35$ juhul parem.
 
 \begin{figure}
 \centering
@@ -90,7 +96,7 @@ Uuritava mudeli korral on algoritmide tulemused paljulubavad ning paistavad üks
     \end{subtable} 
 \end{table}
 
-\subsection{Kolmekaupa Markovi ahel}
+\subsection{Kolmekaupa Markovi ahel}\label{sec:experiments_TMM}
 
 Teiseks kirjeldame kolmekaupa Markovi ahela (\ref{eq:model2_1}), (\ref{eq:model2_1}) eksperimente. Siin genereerisime samuti algtõenäosuste ja üleminekute maatriksid Dirichlet' jaotusest, kus iga $u_{t-1}, x_{t-1}, y_{t-1}$ korral on üleminek kirjeldatav kui
 \begin{align*}

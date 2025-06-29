@@ -1,9 +1,6 @@
-\documentclass[a4paper,12pt,estonian]{article}
+\documentclass[a4paper,12pt]{article}
 \usepackage[T1]{fontenc}	% For use with pdflatex
 \usepackage[utf8]{inputenc} % For use with pdflatex
-% \usepackage[english]{babel} % Ingliskeelne lõputöö
-\usepackage[estonian]{babel} % Eestikeelne lõputöö
-\usepackage{csquotes}
 
 \usepackage{setspace}
 \setstretch{1.5}
@@ -30,14 +27,11 @@
 \usepackage{geometry}
 \usepackage{tabularray}
 \UseTblrLibrary{booktabs, siunitx}  
-
-\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
-
 \usepackage{fontspec}
-\usepackage{polyglossia}
 \setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
 \usepackage{minted}
-
+\usepackage[estonian]{babel} % Eestikeelne lõputöö
+\usepackage{polyglossia}
 \newtheorem{theorem}{Teoreem}
 \newtheorem{corollary}{Järeldus}[theorem]
 \theoremstyle{definition}
@@ -47,34 +41,15 @@
 \newcommand{\cev}[1]{\reflectbox{\ensuremath{\vec{\reflectbox{\ensuremath{#1}}}}}}
 \newcommand\myeq{\stackrel{\mathclap{\normalfont\mbox{\small{*}}}}{=}}
 \newcommand{\BibResources}{references}
+\newcommand{\DKL}{D_{\mathrm{KL}}}
 
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 \DeclareMathOperator*{\esssup}{ess\,sup}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
-% Viitesüsteem
-% \usepackage[citestyle=authoryear,natbib=true,backend=bibtex, maxbibnames=99, bibstyle=authoryear]{biblatex}
-\usepackage[backend=biber,style=numeric,sortcites,natbib=true,sorting=none]{biblatex}
+\DeclareMathOperator\supp{supp}
+\usepackage[citestyle=authoryear,natbib=true,backend=biber, maxbibnames=99, bibstyle=authoryear]{biblatex}
 \addbibresource{bibliography.bib}
-
-\begin{filecontents*}{estonian.lbx}
-\ProvidesFile{est.lbx}[2025/05/28 Estonian language stub]
-
-\InheritBibliographyExtras{estonian}
-
-\DeclareBibliographyStrings{%
-  bibliography     = {{Kasutatud kirjandus}{Kasutatud kirjandus}},
-  references       = {{Viited}{Viited}},
-  byeditor         = {{kirjastus}{kirjastus}},
-  in               = {{blabla}{blabla}},
-  page             = {{lehekülg}{lk\adddot}},
-  pages            = {{leheküljed}{lk\adddot}},
-  and              = {{ja}{ja}},
-  andothers        = {{ja teised}{jt\adddot}},
-}
-
-\endinput
-
-\end{filecontents*}
 
 \title{Kolmekordsete Markovi ahelate MAP raja lähendamine variatsiooniliste meetoditega}
 \author{Jaan Erik Pihel}
@@ -84,18 +59,13 @@
 \renewcommand{\figurename}{Joonis}
 \renewcommand{\tablename}{Tabel}
 
-% Tiitelleht
 \include{00_titlepage}
 
-% Lehekülgede nummerdamine
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
-% Lühikokkuvõtted (eesti ja inglise keeles)
 \include{01_abstract}
-% Sisukord
 \tableofcontents
-% Töö struktuur, kus iga osa on eraldi .tex fail
 \include{02_introduction}
 \include{chapter1}
 \include{chapter2}
@@ -107,7 +77,7 @@
 % BibTeX-iga bibliograafia lisamine
 \pagebreak
 \addcontentsline{toc}{section}{Kasutatud allikad (\textsc{Bib}\LaTeX iga)}
-\printbibliography[title={Kasutatud allikad (\textsc{Bib}\LaTeX iga)}]
+\printbibliography[title={Kasutatud allikad}]
 
 % Lisad
 \include{lisa1}
