@@ -1,229 +1,246 @@
 
-\section{Algoritmid ja graafid}
+\section{Algoritmid}
 
-Kirjeldame algoritme ja mõisteid Forney stiilis graafidel, mida kasutame hilisemates peatükkides. Olgu meil Markovi ahel $\bm{Z}$. Edasi-tagasi algoritm kirjeldab, kuidas efektiivselt leida $Z_t$ marginaali ja $(Z_{t-1},Z_t)$ ühismarginaali. Viterbi algoritmi abil leiame Markovi ahela jaoks Viterbi raja. Forney stiilis graafe tutvustame, et oleks selge, mida me hiljem Julia programmikoodis mudeleid luues teeme.
+Kirjeldame algoritme, mida kasutame hilisemates peatükkides. Vaatleme tõenäosusmõõtu $q_x$, kus 
+\begin{equation}
+    \label{eq:almost_markovian}
+    q_x(\bm{x}) := \pi_x(x_1) \prod_{t=2}^T q_{t}(x_{t} | x_{t-1}),
+\end{equation}
+kusjuures mõõdud $\pi_x$, $q_t(\cdot|x_{t-1})$ ei pruugi olla tõenäosusmõõdud; viimane võib isegi olla mingi $t, x_{t-1}$ korral nullmõõt.
+Tähistame fikseeritud $i < j$ korral vektoreid kui $\bm{x}_{i:j} = (x_i,\ldots,x_j)$, $\bm{x} = (x_t)_{t=1}^T$ ning $\bm{x}_{\backslash i, j} := (x_1,\ldots,x_{i-1},x_{i+1},\ldots,x_{j-1},x_{j+1},\ldots,x_T)$. 
+Edasi-tagasi algoritm kirjeldab, kuidas efektiivselt leida marginaali $q_x(x_t):= \sum_{x_{\backslash t}}q_x(\bm{x}_{1:T})$ ja ühismarginaali $q_x(x_{t-1},x_t) := \sum_{x_{\backslash t-1,t}}q_x(\bm{x}_{1:T})$. Viterbi algoritmi abil leiame mõõdu $q_x$ jaoks Viterbi raja. 
 
 \subsection{Edasi-tagasi algoritm}
 \label{chapter:forw_back}
 
-\textcolor{red}{Selles peatükis on sul hoopis teised tähistused kui eelmises peatükis, seda ei tohi olla. Mis on $q$? Mis on $\tilde{q}$ ?Mis on $p(y|z)$ jne, kas $Z=(U,X)$?}
+% \textcolor{red}{Selles peatükis on sul hoopis teised tähistused kui eelmises peatükis, seda ei tohi olla. Mis on $q$? Mis on $\tilde{q}$ ?Mis on $p(y|z)$ jne, kas $Z=(U,X)$?}
 
-Vaatleme mõõtu $q(\bm{z}) := \Tilde{q}(z_1) \prod_{t=2}^T \Tilde{q}(z_{t} | z_{t-1})$ ning $q(\bm{y},\bm{z}) := q(\bm{z}) \prod_{t=1}^T p(y_t | z_t)$, kus $q(\bm{y}) := \sum_{z} q(\bm{y},\bm{z})$ ning $q(\bm{z}|\bm{y}) := q(\bm{y},\bm{z})/q(\bm{y})$. Paneme tähele, et $\Tilde{q}$ kujutab homogeenset Markovi mõõtu, kus iga $t,t'$ ja $z_{t-1}=z_{t'-1}$ korral $\Tilde{q}(\cdot|z_{t-1}) = \Tilde{q}(\cdot|z_{t'-1})$. Rõhutame, et hiljem marginaalide jaotuste $q(z_t),q(z_{t-1},z_t)$ puhul ei järeldu ahela mittehomogeensusest tõttu üldiselt, et kui $t \ne t', z_t=z_{t'}$, siis $q(z_t) = q(z_{t'})$ jne. Tähistame fikseeritud $i < j$ korral vektoreid kui $\bm{y}_{i:j} = (y_i,\ldots,y_j)$, $\bm{y} = (y_t)_{t=1}^n$ ning \\
-$\bm{y}_{\backslash i, j} := (y_1,\ldots,y_{i-1},y_{i+1},\ldots,y_{j-1},y_{j+1},\ldots,y_T)$.
-
-
-\textcolor{red}{Sul $(Z,Y)$ on HMM. See, et HMM (ja ka PMM) korral $Z$ on Markovi ahel, on teada- tuntud asi, ma ei te, kas on vaja tõestada. Kuid võid. Kuid HMMi korral parem pool on   $q(z_t | z_{t-1}, \bm{y}_{t:T})$, st ei sõltu $y_{t-1}$-st},  
-
-Näitame, et kui $\bm{Z} \sim q(\cdot | \bm{y})$, siis $\bm{Z}$ on (üldiselt mittehomogeenne) Markovi ahel. Selleks kirjutame
+Otsime marginaali $q_x(x_t)$, selleks kirjutame
+\begin{align}
+    \notag
+    q_x(x_t) &= \sum_{x_{1:t-1}} \sum_{x_{t+1:T}} {\pi_x(x_1) \prod_{t=2}^T q_t(x_t|x_{t-1})} \\
+    \notag
+    &= \left( \sum_{x_{1:t-1}} {\pi_x(x_1) \prod_{t'=2}^{t-1} q_{t'}(x_{t'}|x_{t'-1})} \right) \cdot \left( \sum_{x_{t+1:T}} {\prod_{t'=t+1}^{T} q_{t'}(x_{t'}|x_{t'-1})} \right) \\
+    \label{eq:fb1}
+    &= \alpha_t(x_t)  \cdot \beta_t(x_t),
+\end{align}
+kus kirjutame $\alpha_1(x_1) = \pi(x_1)$, $\beta_T(x_T) = 1$ ja muidu $t \in \{ 1,\ldots,T\}$ korral
 \begin{align*}
-    q(z_{t} | \bm{z}_{1:t-1}, \bm{y}) &= \frac{q(z_t, \bm{y}_{t+1:T} | \bm{z}_{1:t-1}, \bm{y}_{1:t-1}) \ q(\bm{z}_{1:t-1}, \bm{y}_{1:t-1})}{q(\bm{y}_{t+1:T}, y_t | \bm{y}_{1:t-1}, \bm{z}_{1:t-1}) \ q(\bm{z}_{1:t-1}, \bm{y}_{1:t-1})}\\
-    &= \frac{q(z_t, \bm{y}_{t:T} | z_{t-1}, y_{t-1})}{q(\bm{y}_{t:T} | z_{t-1}, y_{t-1})} \\
-    &= q(z_t | z_{t-1}, \bm{y}_{t-1:T}),
+    \alpha_t(x_t) :&= \sum_{x_{1:t-1}} p(\bm{x}_{1:t})=  \sum_{x_{1:t-1}} {\pi_x(x_1) \prod_{t'=2}^{t-1} q_{t'}(x_{t'}|x_{t'-1})} ,\\
+    \beta_t(x_t) :&= \sum_{x_{t+1:T}} p(\bm{x}_{t+1:T}|x_t) = \sum_{x_{t+1:T}} {\prod_{t'=t+1}^{T} q_{t'}(x_{t'}|x_{t'-1})}.
 \end{align*}
-kus esimeses võrduses kasutame Bayesi valemit ning teises kasutame ära seda, et tegemist on varjatud Markovi ahelaga, ning kolmandas taas Bayesi valemit.
 
-Analoogse arutelu tulemusel saame ka, et
-\begin{equation*}
-    q(z_t | z_{t-1}, \bm{y}_{t-1:T}) = \frac{q(z_t, \bm{y}_{t:T} | z_{t-1}, y_{t-1})}{q(\bm{y}_{t:T} | z_{t-1}, y_{t-1})} = \frac{q(z_t, \bm{y}_{t:T} | z_{t-1}, \bm{y})}{q(\bm{y}_{t:T} | z_{t-1}, \bm{y})} = q(z_{t} | z_{t-1}, \bm{y})
-\end{equation*}
-ja tulemusena
-\begin{equation}\label{eq:inhomog_markov}
-    q(z_{t} | \bm{z}_{1:t-1}, \bm{y}) = q(z_{t} | z_{t-1}, \bm{y}).
+% \textcolor{red}{Sul $(Z,Y)$ on HMM. See, et HMM (ja ka PMM) korral $Z$ on Markovi ahel, on teada- tuntud asi, ma ei te, kas on vaja tõestada. Kuid võid. Kuid HMMi korral parem pool on   $q(z_t | z_{t-1}, \bm{y}_{t:T})$, st ei sõltu $y_{t-1}$-st},  
+
+
+% \textcolor{red}{Ka alljärgnevad edasi-tagasi valemid on teada-tuntud ja kirjandusest leitavad. Ning HMMi korral natuke lihtsamad kui üldise PMMi korral.}
+
+Ilmselt saame kirjutada rekursiivselt iga $t > 1$ ja $\alpha_t$ jaoks ning iga $t < T$ ja $\beta_t$ jaoks
+\begin{align*}
+    \alpha_t(x_{t}) &= \sum_{x_{t-1}} \alpha_t(x_{t-1}) q_t(x_{t} | x_{t-1}) \text{ ja} \\
+    \beta_t(x_t) &= \sum_{x_{t+1}} q_{t+1}(x_{t+1} | x_{t})\beta_{t+1}(z_{t+1}).
+\end{align*}
+
+Analoogselt saame kirjutada ühismarginaali $q_x(x_{t-1},x_t)$ kui
+\begin{align}
+    \notag
+    q_x(x_{t-1},x_t) &= \sum_{x_{1:t-2}} \sum_{x_{t+1:T}} {\pi_x(x_1) \prod_{t=2}^T q_t(x_t|x_{t-1})}\\
+    \notag
+    &= \left( \sum_{x_{1:t-2}} {\pi_x(x_1) \prod_{t'=2}^{t-1} q_{t'}(x_{t'}|x_{t'-1})} \right) q_{t}(x_t|x_{t-1}) \left( \sum_{x_{t+1:T}} \prod_{t'=t+1}^T q_{t'}(x_{t'}|x_{t'-1}) \right)\\
+    \label{eq:fb2}
+    &= \alpha_{t-1}(x_t) q_{t}(x_t|x_{t-1}) \beta_t(x_t).
+\end{align}
+
+Uurime juhtu, kus mõõt $s_x$ on samuti kujul (\ref{eq:almost_markovian}), ehk
+$$s_x(\bm{x}) = \pi_s(x_1) \prod_{t=2}^T s_t(x_t|x_{t-1}),\; \sum_{\bm{x}}s_x(\bm{x}) > 0$$
+kuid ei pruugi olla tõenäosusmõõt. Sel juhul on lihtne see mõõt normaliseerida. Edasi-tagasi algoritmi abil leiame iga $t \in \{1,\ldots,T\}$ jaoks $\alpha_t, \beta_t$ ja normaliseerime suvalise $t$ korral
+$$Z = \sum_{x_t} \alpha_t(x_t)\beta_t(x_t).$$
+
+Saame kirjutada vastava tõenäosusmõõdu, kus 
+\begin{equation}
+    \label{eq:almost_markovian_normalisation}
+    \Tilde{s}_x = \pi_{\Tilde{s}}(x_1) \prod_{t=2}^T s_t(x_t|x_{t-1}),\ \pi_{\Tilde{s}}(x_1) = \frac{\pi_{s}(x_1)}{\sum_{x_1}\alpha_1(x_1)\beta_1(x_1)}.
 \end{equation}
 
-\textcolor{red}{Ka alljärgnevad edasi-tagasi valemid on teada-tuntud ja kirjandusest leitavad. Ning HMMi korral natuke lihtsamad kui üldise PMMi korral.}
+% \textcolor{red}{Kas $\alpha(z_t)$   on defineeritud kui $q(z_t|y_{1:t})$, $q(z_t,y_{1:t})$ või hoopis $q(z_t|{\bf y})$?
+% Defineeri $\alpha(z_t)$ kõigepealt (iga $t$ korral) ja siis näita rekursioon. Preagu on nii, et $\alpha(z_1)$ on defineeritud ühte moodi, kuid rekursioon räägib midagi muud. Tavaliselt on $\alpha(z_t)$ defineeritud kui $\alpha(z_t,y_{1:t})$ ja kui sul on midagi muud, siis tee see lugejale selgeks. Sama $\beta$-kohta --- defineeri kõigepealt ära ja siis esita rekursioon. Tavaliselt on $\beta(z_t)$ defineeritud kui $\beta(z_t)=q(y_{t+1:T}|z_t)$ (eeldusel, et $(Z,Y)$ on HMM) ja kui sinu beta on midagi muud, siis tee see lugejale selgeks.}
 
+% Nüüd, et $q(\cdot | \bm{y})$ on Markovi ahel, avaldame $q(z_t | \bm{y})$ kui
+% \begin{align} \notag
+%     \sum_{ z_{\backslash t} } q(\bm{z} | \bm{y}) &= \left( \sum_{z_{t-1}} \left\{ \sum_{\bm{z}_{1:t-2}} q(z_1 | \bm{y}) \left( \prod_{t'=2}^{t-2} q(z_{t'} | z_{t'-1}, \bm{y}) \right) q(z_{t-1} | z_{t-2}, \bm{y}) \right\} q(z_t | z_{t-1}, \bm{y}) \right) \\
+%     \notag
+%     & \cdot \left( \sum_{z} q(z_{t+1} | z_t, \bm{y}) \left\{ \sum_{\bm{z}_{t+2:n}} \prod_{t''=t+2}^n q(z_{t''}|z_{t''-1},\bm{y}) \right\} \right) \\
+%     \notag
+%     &= \left( \sum_{z_{t-1}} \alpha(z_{t-1}) q(z_t | z_{t-1}, \bm{y}) \right) \cdot \left( \sum_{z_{t+1}} q(z_{t+1} | z_t, \bm{y}) \beta(z_{t+1}) \right)\\
+%     \label{eq:fb1}
+%     &= \alpha(z_t) \beta(z_t)
+% \end{align}
+% \textcolor{red}{ülaltoodud valemis summa üle $z_{t+2:n}$ ehk $\beta (z_{t+1})=1$. Ja $\alpha(z_t)=q(z_t|\bm{y}).$ Nii, et formaalselt on (2.2) küll õige kuid kasutu, set kuidas arvutada  $q(z_{t+1} | z_t, \bm{y}) $ ja  $q(z_t|\bm{y})?$ Tee see ja ka järgnev valem korda. Kui ise ei oska, leia kirjandusest.}
 
-Järgmisena otsime skeemi marginaalide $q(z_t | \bm{y})$ ja $q(z_t, z_{t+1} | \bm{y})$ arvutamiseks. Defineerime
-\begin{align*}
-    \alpha(z_1) &= q(z_1|y_1),& \alpha(z_{t}) := \sum_{z_{t-1}} \alpha (z_{t-1}) q(z_{t} | z_{t-1}, \bm{y}) \text{ ja} \\
-    \beta(z_T) &= 1,& \beta (z_t) := \sum_{z_{t+1}} q(z_{t+1} | z_{t}, \bm{y})\beta (z_{t+1}).
-\end{align*}
-
-\textcolor{red}{Kas $\alpha(z_t)$   on defineeritud kui $q(z_t|y_{1:t})$, $q(z_t,y_{1:t})$ või hoopis $q(z_t|{\bf y})$?
-Defineeri $\alpha(z_t)$ kõigepealt (iga $t$ korral) ja siis näita rekursioon. Preagu on nii, et $\alpha(z_1)$ on defineeritud ühte moodi, kuid rekursioon räägib midagi muud. Tavaliselt on $\alpha(z_t)$ defineeritud kui $\alpha(z_t,y_{1:t})$ ja kui sul on midagi muud, siis tee see lugejale selgeks. Sama $\beta$-kohta --- defineeri kõigepealt ära ja siis esita rekursioon. Tavaliselt on $\beta(z_t)$ defineeritud kui $\beta(z_t)=q(y_{t+1:T}|z_t)$ (eeldusel, et $(Z,Y)$ on HMM) ja kui sinu beta on midagi muud, siis tee see lugejale selgeks.}
-
-}
-
-
-
-
-Nüüd, et $q(\cdot | \bm{y})$ on Markovi ahel, avaldame $q(z_t | \bm{y})$ kui
-\begin{align} \notag
-    \sum_{ z_{\backslash t} } q(\bm{z} | \bm{y}) &= \left( \sum_{z_{t-1}} \left\{ \sum_{\bm{z}_{1:t-2}} q(z_1 | \bm{y}) \left( \prod_{t'=2}^{t-2} q(z_{t'} | z_{t'-1}, \bm{y}) \right) q(z_{t-1} | z_{t-2}, \bm{y}) \right\} q(z_t | z_{t-1}, \bm{y}) \right) \\
-    \notag
-    & \cdot \left( \sum_{z} q(z_{t+1} | z_t, \bm{y}) \left\{ \sum_{\bm{z}_{t+2:n}} \prod_{t''=t+2}^n q(z_{t''}|z_{t''-1},\bm{y}) \right\} \right) \\
-    \notag
-    &= \left( \sum_{z_{t-1}} \alpha(z_{t-1}) q(z_t | z_{t-1}, \bm{y}) \right) \cdot \left( \sum_{z_{t+1}} q(z_{t+1} | z_t, \bm{y}) \beta(z_{t+1}) \right)\\
-    \label{eq:fb1}
-    &= \alpha(z_t) \beta(z_t)
-\end{align}
-\textcolor{red}{ülaltoodud valemis summa üle $z_{t+2:n}$ ehk $\beta (z_{t+1})=1$. Ja $\alpha(z_t)=q(z_t|\bm{y}).$ Nii, et formaalselt on (2.2) küll õige kuid kasutu, set kuidas arvutada  $q(z_{t+1} | z_t, \bm{y}) $ ja  $q(z_t|\bm{y})?$ Tee see ja ka järgnev valem korda. Kui ise ei oska, leia kirjandusest.}
-
-ning näeme, et tõepoolest saame $q(z_t | \bm{y})$ leida edasi-tagasi algoritmi abil. Sama märkame $(z_t, z_{t-1})$ ühismarginaali puhul, kui kirjutame iga $>1$ korral $q(z_t, z_{t-1} | \bm{y})$ kui
-\begin{align}
-\notag
-     \sum_{ \bm{z}_{\backslash t-1, t} } q(\bm{z} | \bm{y}) &= \Biggl\{ \sum_{z_{t-2}} \left[ \sum_{\bm{z}_{1:t-3}} q(z_1 | \bm{y}) \left( \prod_{t'=2}^{t-3} q(z_{t'} | z_{t'-1}, \bm{y}) \right) q(z_{t-2} | z_{t-3}, \bm{y}) \right] q(z_t | z_{t-2}, \bm{y}) \Biggr\} \\
-    \notag
-     & \cdot \left( \sum_{z_t} q(z_{t} | z_{t-1}, \bm{y}) \big\{ \sum_{\bm{z}_{t+1:n}} \prod_{t''=t+1}^n q(z_{t''}|z_{t''-1},\bm{y}) \big\} \right) \\
-    \notag
-    &= \left( \sum_{z_{t-2}} \alpha_{t-2}(z_{t-2}) q(z_{t-1} | z_{t-2}, \bm{y}) \right) q(z_{t} | z_{t-1}, \bm{y}) \left( \sum_{z_{t+1}} q(z_{t+1} | z_{t}, \bm{y}) \beta_{t+1}(z_{t+1}) \right)\\
-    \label{eq:fb2}
-    &= \alpha(z_{t-1}) q(z_t|z_{t-1},\bm{y}) \beta(z_t)  .
-\end{align}
+% ning näeme, et tõepoolest saame $q(z_t | \bm{y})$ leida edasi-tagasi algoritmi abil. Sama märkame $(z_t, z_{t-1})$ ühismarginaali puhul, kui kirjutame iga $>1$ korral $q(z_t, z_{t-1} | \bm{y})$ kui
+% \begin{align}
+% \notag
+%      \sum_{ \bm{z}_{\backslash t-1, t} } q(\bm{z} | \bm{y}) &= \Biggl\{ \sum_{z_{t-2}} \left[ \sum_{\bm{z}_{1:t-3}} q(z_1 | \bm{y}) \left( \prod_{t'=2}^{t-3} q(z_{t'} | z_{t'-1}, \bm{y}) \right) q(z_{t-2} | z_{t-3}, \bm{y}) \right] q(z_t | z_{t-2}, \bm{y}) \Biggr\} \\
+%     \notag
+%      & \cdot \left( \sum_{z_t} q(z_{t} | z_{t-1}, \bm{y}) \big\{ \sum_{\bm{z}_{t+1:n}} \prod_{t''=t+1}^n q(z_{t''}|z_{t''-1},\bm{y}) \big\} \right) \\
+%     \notag
+%     &= \left( \sum_{z_{t-2}} \alpha_{t-2}(z_{t-2}) q(z_{t-1} | z_{t-2}, \bm{y}) \right) q(z_{t} | z_{t-1}, \bm{y}) \left( \sum_{z_{t+1}} q(z_{t+1} | z_{t}, \bm{y}) \beta_{t+1}(z_{t+1}) \right)\\
+%     \label{eq:fb2}
+%     &= \alpha(z_{t-1}) q(z_t|z_{t-1},\bm{y}) \beta(z_t)  .
+% \end{align}
 
 \subsection{Viterbi algoritm}
 
-Vaatleme paarikaupa mittehomogeenset Markovi ahelat $p(\bm{z})$ sooviga leida Viterbi rada $\bm{z}^* \in \mathcal{Z}^T$, kus $\bm{z}^* = \argmax_{\bm{z}} p(\bm{z})$. \textcolor{red}{Jälle uus tähistus! Kas $p(z)$ ja $q(z)$ on sama? }
+Vaatleme tõenäosusmõõtu $q_x$ kujul (\ref{eq:almost_markovian}), kus
+$$
+q_x(\bm{x}) := \pi_x(x_1) \prod_{t=2}^T q_{t}(x_{t} | x_{t-1}),$$
+sooviga leida Viterbi rada $\bm{x}^* \in \mathcal{X}^T$, kus $\bm{x}^* = \argmax_{\bm{x}} q_x(\bm{x})$.
+Paneme tähele, et me saame leida selle ajalise keerukusega $\mathcal{O} (|\mathcal{X}|^2 T)$ järgmiselt. Defineerime funktsiooni  $\delta$, kus $\delta(x_1) = q(x_1)$ ja $t > 1$ korral
+$$\delta(x_t) = \max_{x_{1:t-1}} q_x(\bm{x}_{1:t}),$$
+mille saame samaväärselt kirjutada
+iga  $t = 2,\ldots,T$ korral 
+$$\delta(x_t) = \max_{x_{t-1}} q(x_t | x_{t-1}) \delta(z_{t-1}),$$
+
+% \textcolor{red}{Tavaliselt tähistatakse $b(z_t)$ kui $\delta(z_t)$, aga võib muidugi ka teisiti. Defineeri enne formaalselt
+% $$b(z_t)=\max_{z_{1:t-1}}p(z_{1:t-1},z_t)$$
+% ja siis rekursioon.}
+
+kus jätame meelde ka
+$$c(z_t) = \argmax_{z_{t-1}} p(z_t | z_{t-1}) b(x_{t-1}),$$
+kusjuures implementeerides võib iga $t$ korral ära unustada kõik $\delta(x_{t'})$, kus $t' < t - 1$.
+
+Seejärel võtame $x_T^* = \argmax_{x_{T}} \delta(x_T)$ ning leiame Viterbi raja leides iga $t = T-1,\ldots,1$ korral $x_t^* = c(x_{t+1})$.
 
 
-Paneme tähele, et me saame leida selle ajalise keerukusega $\mathcal{O} (|\mathcal{Z}|^2 T)$ järgmiselt. Väärtustame vektori 
-$$b(z_1) = p(z_1)$$
-ja leiame iga järgneva $t = 2,\ldots,T$ korral 
-$$b(z_t) = \max_{z_{t-1}} p(z_t | z_{t-1}) b(z_{t-1})$$
+% \subsection{Forney stiilis graafid ja sõnumiedastus}
 
-\textcolor{red}{Tavaliselt tähistatakse $b(z_t)$ kui $\delta(z_t)$, aga võib muidugi ka teisiti. Defineeri enne formaalselt
-$$b(z_t)=\max_{z_{1:t-1}}p(z_{1:t-1},z_t)$$
-ja siis rekursioon.}
+% \textcolor{red}{See, mis nüüd järgneb, on mulle täiesti arusaamatu ja segane. Mis mudelist käib jutt, mis on faktor, mis  juhuslikud suurused, mis on sõnum, mis on "serva marginaali jaotus" jne. Kõik on defineerimata. Ja mis peaasi -- kuidas see kõik on seotud eelnevaga ning miks sellest kirjutad?  Kui mina ei saa aru, siis ei saa suure tõenäosusegas sellest kõigest aru ka retsensent. Seega, kui tahad seda osa oma töösse jätta, siis alusta päris algusest, defineeri ja seleta kõik korralikult lahti ning mis peaasi -- selgita, milleks see kõik.}
 
-ning jätame meelde ka
-$$c(z_t) = \argmax_{z_{t-1}} p(z_t | z_{t-1}) b(z_{t-1}),$$
-kusjuures implementeerides võib iga $t$ korral ära unustada kõik $b(z_{t'})$, kus $t' < t - 1$.
+% Forney stiilis graafe (FFG e \emph{Forney-style factor graph}) kirjeldati ELBO (\ref{eq:elbo}) minimiseerimise seisukohast töö \cite{COX2019185} peatükis 1.3. Saame defineerida FFG kui suunamata graafi $\mathcal{G} = (\mathcal{V}, \mathcal{E})$, kus $\mathcal{V}$ on tippude ehk mudelis leiduvate faktorite hulk ning $\mathcal{E} \subseteq \mathcal{V} \times \mathcal{V}$ on servade ehk mudelis leiduvate juhuslike suuruste hulk.
 
-Seejärel võtame $z_T^* = \argmax_{z_{T}} b(z_T)$ ning leiame Viterbi raja leides iga $t = T-1,\ldots,1$ korral $z_t^* = c(z_{t+1})$.
+% Iga serv peab olema defineeritud täpselt kahe tipu vahel. Kui juhuslik suurus leidub rohkem kui kahes faktoris, siis "paljundatakse" serva võrdustippude abil, mis on defineeritud kolme muutuja $s,s',s''$ jaoks kui $f_=(s,s',s'') = \delta(s-s')\delta(s-s'')$, kus $\delta$ on kas Kroneckeri või Diraci deltafunktsioon. Kui juhuslik suurus leidub ühes faktoris, siis loome graafis uue faktori, milleks on enamasti mitte-informatiivne ühtlane jaotus. Juhuslike suuruste fikseerimiseks (nt vaatlusandmetevektori $\bm{y}$) kasutatakse punktmasside jaotusi sobivate kaaludega.
 
-Viterbi algoritmi kiirus on miski, mida me soovime kindlasti ära kasutada.
+% Vaatame näitena mudelit, kus olgu diskreetsed juhuslikud suurused $X_1,\ldots,X_5$, mille tihedusfunktsiooni kirjeldab mudel
+% \begin{equation}
+%     \label{eq:sample_model}
+%     f(\bm{x}) = f_a(x_1) f_b(x_1,x_2,x_3) f_c(x_3,x_4,x_5) f_d(x_3)
+% \end{equation}
+% ning saame seda kujutada joonisel \ref{fig:ffg_model}. Kasutame faktori $e$ puhul ka tähistusi $\bm{x}_e$, mis on kõigi faktori $e$ liikmete hulk, ja $\bm{x}_{e \setminus k} := \bm{x}_e \setminus \{x_k\}$, nt $\bm{x}_c = \{x_3,x_4,x_5\}$ ning $\bm{x}_{c\setminus 3} = \{x_4,x_5\} $. Joonisel on graaf kujutatud suunatuna vaid selleks, et eristada BP ja VMP algoritmide puhul "edasi" ja "tagasi" osasid.
 
-\subsection{Forney stiilis graafid ja sõnumiedastus}
+% \begin{figure}[!ht]
+% \centering
+% \resizebox{0.8\textwidth}{!}{
+% \begin{circuitikz}
+% \tikzstyle{every node}=[font=\LARGE]
+% \draw  (0,18.25) rectangle  node {\LARGE $f_a$} (2,16.25);
+% \node [font=\Large] at (1.5,15.25) {};
+% \draw [->, >=Stealth] (9.5,17.25) -- (11.25,17.25)node[pos=0.5,above, fill=white]{$x_3$};
+% \node [font=\Large] at (5,15.5) {};
+% \draw  (3.75,18.25) rectangle  node {\LARGE $f_b$} (5.75,16.25);
+% \draw  (11.25,18.25) rectangle  node {\LARGE $f_c$} (13.25,16.25);
+% \node [font=\Large] at (12,15.5) {};
+% \node [font=\Large] at (12,15.5) {};
+% \draw  (7.5,18.25) rectangle  node {\LARGE $=$} (9.5,16.25);
+% \draw [->, >=Stealth] (13.25,17.25) -- (15,17.25)node[pos=0.5,above, fill=white]{$x_5$};
+% \draw [->, >=Stealth] (2,17.25) -- (3.75,17.25)node[pos=0.5,above, fill=white]{$x_{1}$};
+% \draw [->, >=Stealth] (4.75,16.25) -- (4.75,14.5)node[pos=0.5,right, fill=white]{$x_2$};
+% \draw [->, >=Stealth] (5.75,17.25) -- (7.5,17.25)node[pos=0.5,above, fill=white]{$x_3$};
+% \draw  (7.5,14.5) rectangle  node {\LARGE $f_d$} (9.5,12.5);
+% \draw [->, >=Stealth] (8.5,16.25) -- (8.5,14.5)node[pos=0.5,right, fill=white]{$x_3$};
+% \draw [->, >=Stealth] (12.25,16.25) -- (12.25,14.5)node[pos=0.5,right, fill=white]{$x_4$};
+% \end{circuitikz}
+% }
+% \caption{Forney stiilis graaf mudelist (\ref{eq:sample_model}).}
+% \label{fig:ffg_model}
+% \end{figure}
 
+% Sõnumi $\mu$ defineerime kui faktori lokaalse marginalisatsiooni ühele servale. Serva 
+% $x_t$ marginaali jaotuse anname kui $p(x_t) \propto \vec{\mu}(x_t) \cev{\mu}(x_t)$. BP algoritmi puhul kirjeldame graafidel sõnumeid serval $x_t$ tippude $f_e$ ja $f_f$ vahel kui
+% $$\vec{\mu}(x_t) = \sum_{\bm{x}_{e\setminus t}} f_e(\bm{x}_e) \prod_{x_k \in \bm{x}_{e\setminus t}} \vec{\mu}(x_k),$$
+% $$\cev{\mu}(x_t) = \sum_{\bm{x}_{f\setminus t}} f_f(\bm{x}_f) \prod_{x_k \in \bm{x}_{f\setminus t}} \cev{\mu}(x_k).$$
+% Samuti saame leida ka ühismarginaali. Olgu servade $x_{t-1},x_t$ vahel tipp $f_e$. Kirjutame
+% $$p(x_{t-1},x_t) \propto \vec{\mu}(x_{t-1}) f_e(x_{t-1},x_t) \cev{\mu}(x_t) .$$
 
-\textcolor{red}{See, mis nüüd järgneb, on mulle täiesti arusaamatu ja segane. Mis mudelist käib jutt, mis on faktor, mis  juhuslikud suurused, mis on sõnum, mis on "serva marginaali jaotus" jne. Kõik on defineerimata. Ja mis peaasi -- kuidas see kõik on seotud eelnevaga ning miks sellest kirjutad?  Kui mina ei saa aru, siis ei saa suure tõenäosusegas sellest kõigest aru ka retsensent. Seega, kui tahad seda osa oma töösse jätta, siis alusta päris algusest, defineeri ja seleta kõik korralikult lahti ning mis peaasi -- selgita, milleks see kõik.}
+% Siit võib märgata, et rekursiivse BP algoritmi puhul on mudeli (\ref{eq:sample_model}) jaoks vaja nt serva $x_3$ marginaali leidmiseks vaja leida rekursiivselt edasi-sõnumid $\vec{\mu}(x_1),\vec{\mu}(x_2),\vec{\mu}(x_3'),\vec{\mu}(x_3''),\vec{\mu}(x_3)$ ja tagasi-sõnum $\cev{\mu}(x_3)$. Sõnumid üldistavad operatsioone, mis Markovi ahela puhul on meile esimesest alapeatükist juba tuttavad edasi-tagasi algoritmi osad $\alpha(x_t) = \vec{\mu}(x_t)$ ja $\beta(x_t) = \cev{\mu}(x_t)$.
 
-Forney stiilis graafe (FFG e \emph{Forney-style factor graph}) kirjeldati ELBO (\ref{eq:elbo}) minimiseerimise seisukohast töö \cite{COX2019185} peatükis 1.3. Saame defineerida FFG kui suunamata graafi $\mathcal{G} = (\mathcal{V}, \mathcal{E})$, kus $\mathcal{V}$ on tippude ehk mudelis leiduvate faktorite hulk ning $\mathcal{E} \subseteq \mathcal{V} \times \mathcal{V}$ on servade ehk mudelis leiduvate juhuslike suuruste hulk.
+% VMP algoritm on arvutuslikult kergem, sest me defineerime marginaali lähendi $q(x_t) \propto \vec{\nu}(x_t) \cev{\nu}(x_t)$ ja sõnumid kui
+% $$\ln \vec{\nu}(x_t) \propto \sum_{\bm{x}_{e\setminus t}} q(\bm{x}_{e \setminus t}) \ln f_e(\bm{x}_e),$$
+% $$\ln \cev{\nu}(x_t) = \sum_{\bm{x}_{f\setminus t}}  q(\bm{x}_{f \setminus t}) \ln f_f(\bm{x}_f),$$
+% kus meie töös me eeldame sõltumatusi iga faktori $e$ jaoks
+% $$q(\bm{x}_{e}) = \prod_{x_k \in \bm{x}_{e}} q(x_k).$$
 
-Iga serv peab olema defineeritud täpselt kahe tipu vahel. Kui juhuslik suurus leidub rohkem kui kahes faktoris, siis "paljundatakse" serva võrdustippude abil, mis on defineeritud kolme muutuja $s,s',s''$ jaoks kui $f_=(s,s',s'') = \delta(s-s')\delta(s-s'')$, kus $\delta$ on kas Kroneckeri või Diraci deltafunktsioon. Kui juhuslik suurus leidub ühes faktoris, siis loome graafis uue faktori, milleks on enamasti mitte-informatiivne ühtlane jaotus. Juhuslike suuruste fikseerimiseks (nt vaatlusandmetevektori $\bm{y}$) kasutatakse punktmasside jaotusi sobivate kaaludega.
+% Tippude $f_e,f_f$ vahelise serva $x_t$ jaoks defineerime Markovi ümbruse (\emph{Markov's boundary}) kui hulga
+% $$M_b(x_t) := \{x_k | x_k \in \bm{x}_e \cup \bm{x}_f, x_k \ne x_t \} ,$$
+% millel tinglikustades on juhuslik suurus $X_t$ sõltumatu teistest juhuslikest suurustest ehk iga $x \in \{x_1,\ldots,x_{t-1},x_{t+1},\ldots x_T\} \setminus M_b(x_t)$ korral
+% $$p(x_t,x|M_b(x_t)) = p(x_t|M_b(x_t))\ p(x|M_b(x_t)).$$
 
-Vaatame näitena mudelit, kus olgu diskreetsed juhuslikud suurused $X_1,\ldots,X_5$, mille tihedusfunktsiooni kirjeldab mudel
-\begin{equation}
-    \label{eq:sample_model}
-    f(\bm{x}) = f_a(x_1) f_b(x_1,x_2,x_3) f_c(x_3,x_4,x_5) f_d(x_3)
-\end{equation}
-ning saame seda kujutada joonisel \ref{fig:ffg_model}. Kasutame faktori $e$ puhul ka tähistusi $\bm{x}_e$, mis on kõigi faktori $e$ liikmete hulk, ja $\bm{x}_{e \setminus k} := \bm{x}_e \setminus \{x_k\}$, nt $\bm{x}_c = \{x_3,x_4,x_5\}$ ning $\bm{x}_{c\setminus 3} = \{x_4,x_5\} $. Joonisel on graaf kujutatud suunatuna vaid selleks, et eristada BP ja VMP algoritmide puhul "edasi" ja "tagasi" osasid.
+% \subsection{VMP näide}
 
-\begin{figure}[!ht]
-\centering
-\resizebox{0.8\textwidth}{!}{
-\begin{circuitikz}
-\tikzstyle{every node}=[font=\LARGE]
-\draw  (0,18.25) rectangle  node {\LARGE $f_a$} (2,16.25);
-\node [font=\Large] at (1.5,15.25) {};
-\draw [->, >=Stealth] (9.5,17.25) -- (11.25,17.25)node[pos=0.5,above, fill=white]{$x_3$};
-\node [font=\Large] at (5,15.5) {};
-\draw  (3.75,18.25) rectangle  node {\LARGE $f_b$} (5.75,16.25);
-\draw  (11.25,18.25) rectangle  node {\LARGE $f_c$} (13.25,16.25);
-\node [font=\Large] at (12,15.5) {};
-\node [font=\Large] at (12,15.5) {};
-\draw  (7.5,18.25) rectangle  node {\LARGE $=$} (9.5,16.25);
-\draw [->, >=Stealth] (13.25,17.25) -- (15,17.25)node[pos=0.5,above, fill=white]{$x_5$};
-\draw [->, >=Stealth] (2,17.25) -- (3.75,17.25)node[pos=0.5,above, fill=white]{$x_{1}$};
-\draw [->, >=Stealth] (4.75,16.25) -- (4.75,14.5)node[pos=0.5,right, fill=white]{$x_2$};
-\draw [->, >=Stealth] (5.75,17.25) -- (7.5,17.25)node[pos=0.5,above, fill=white]{$x_3$};
-\draw  (7.5,14.5) rectangle  node {\LARGE $f_d$} (9.5,12.5);
-\draw [->, >=Stealth] (8.5,16.25) -- (8.5,14.5)node[pos=0.5,right, fill=white]{$x_3$};
-\draw [->, >=Stealth] (12.25,16.25) -- (12.25,14.5)node[pos=0.5,right, fill=white]{$x_4$};
-\end{circuitikz}
-}
-\caption{Forney stiilis graaf mudelist (\ref{eq:sample_model}).}
-\label{fig:ffg_model}
-\end{figure}
+% Tutvustame üht mudelit, kus variatsioonilised jaotused ei ole kaaseksponentsiaaljaotuste (\emph{conjugate exponential distributions}) perest. See erineb kirjandusest, kus edastatavateks sõnumiteks on jaotuste piisavad statistikud ja naturaalparameetrid, ning on õpetlik eeltöö VMP algoritmiga mudelile, mida kirjeldatakse peatükis \ref{section:vmp_tmc}. Samuti kirjeldame alapeatüki lõpus, kuidas uuritavat mudelit implementeerida Julia teegis RxInfer.
 
-Sõnumi $\mu$ defineerime kui faktori lokaalse marginalisatsiooni ühele servale. Serva 
-$x_t$ marginaali jaotuse anname kui $p(x_t) \propto \vec{\mu}(x_t) \cev{\mu}(x_t)$. BP algoritmi puhul kirjeldame graafidel sõnumeid serval $x_t$ tippude $f_e$ ja $f_f$ vahel kui
-$$\vec{\mu}(x_t) = \sum_{\bm{x}_{e\setminus t}} f_e(\bm{x}_e) \prod_{x_k \in \bm{x}_{e\setminus t}} \vec{\mu}(x_k),$$
-$$\cev{\mu}(x_t) = \sum_{\bm{x}_{f\setminus t}} f_f(\bm{x}_f) \prod_{x_k \in \bm{x}_{f\setminus t}} \cev{\mu}(x_k).$$
-Samuti saame leida ka ühismarginaali. Olgu servade $x_{t-1},x_t$ vahel tipp $f_e$. Kirjutame
-$$p(x_{t-1},x_t) \propto \vec{\mu}(x_{t-1}) f_e(x_{t-1},x_t) \cev{\mu}(x_t) .$$
+% Vaatleme varjatud tunnusega mudelit, kus 
+% \begin{equation}
+%     \label{eq:em_model}
+%      p(p,x,y) = f_{Ber}(x | p = \hat{p}) f_{\mathcal{N}}(y-x|y=\hat{y}),
+% \end{equation}
+% kus $f_{Ber}$ on Bernoulli jaotus teadaoleva kaaluga $\hat{p}$ ning $f_{\mathcal{N}}$ on standardne normaaljaotus teadaoleva emissiooniga $\hat{y}$ ja kujutatakse Forney stiilis faktorgraafil joonisel \ref{fig:em_model}.
 
-Siit võib märgata, et rekursiivse BP algoritmi puhul on mudeli (\ref{eq:sample_model}) jaoks vaja nt serva $x_3$ marginaali leidmiseks vaja leida rekursiivselt edasi-sõnumid $\vec{\mu}(x_1),\vec{\mu}(x_2),\vec{\mu}(x_3'),\vec{\mu}(x_3''),\vec{\mu}(x_3)$ ja tagasi-sõnum $\cev{\mu}(x_3)$. Sõnumid üldistavad operatsioone, mis Markovi ahela puhul on meile esimesest alapeatükist juba tuttavad edasi-tagasi algoritmi osad $\alpha(x_t) = \vec{\mu}(x_t)$ ja $\beta(x_t) = \cev{\mu}(x_t)$.
+% \begin{figure}[!ht]
+% \centering
+% \resizebox{0.5\textwidth}{!}{%
+% \begin{circuitikz}
+% \tikzstyle{every node}=[font=\LARGE]
+% \draw  (1.5,18) circle (1cm) node {\LARGE $\hat{p}$} ;
+% \draw  (5.25,19) rectangle  node {\LARGE $Ber$} (7.25,17);
+% \draw [->, >=Stealth] (2.5,18) -- (5.25,18)node[pos=0.5,below, fill=white]{p};
+% \draw  (5.25,15) rectangle  node {\LARGE $\mathcal{N}$} (7.25,13);
+% \draw [->, >=Stealth] (6.25,17) -- (6.25,15)node[pos=0.5,right, fill=white]{x};
+% \draw  (11,14) circle (1cm) node {\LARGE $\hat{y}$} ;
+% \draw [->, >=Stealth] (7.25,14) -- (10,14)node[pos=0.5,below, fill=white]{y};
+% \end{circuitikz}
+% }%
+% \caption{Forney stiilis graaf mudelist (\ref{eq:em_model}).}
+% \label{fig:em_model}
+% \end{figure}
 
-VMP algoritm on arvutuslikult kergem, sest me defineerime marginaali lähendi $q(x_t) \propto \vec{\nu}(x_t) \cev{\nu}(x_t)$ ja sõnumid kui
-$$\ln \vec{\nu}(x_t) \propto \sum_{\bm{x}_{e\setminus t}} q(\bm{x}_{e \setminus t}) \ln f_e(\bm{x}_e),$$
-$$\ln \cev{\nu}(x_t) = \sum_{\bm{x}_{f\setminus t}}  q(\bm{x}_{f \setminus t}) \ln f_f(\bm{x}_f),$$
-kus meie töös me eeldame sõltumatusi iga faktori $e$ jaoks
-$$q(\bm{x}_{e}) = \prod_{x_k \in \bm{x}_{e}} q(x_k).$$
+% Implementeerimaks VMP algoritmi, kirjutame välja variatsioonilised jaotused igale juhuslikule suurusele:
+% \begin{align*}
+%     q(p) &= \delta_{\hat{p}}(p)\\
+%     q(y) &= \delta_{\hat{y}}(y)\\
+%     q(x) &= p_{Ber}(x),
+% \end{align*}
+% kus $\delta_{\hat{p}}$ on Kroneckeri ja $\delta_{\hat{y}}$ Diraci delta funktsioon. Et eelduse kohaselt on $\hat{p}$ ja $\hat{y}$ fikseeritud, siis ainuke jaotus, mida VMP algoritm parandab on $q(x)$. 
 
-Tippude $f_e,f_f$ vahelise serva $x_t$ jaoks defineerime Markovi ümbruse (\emph{Markov's boundary}) kui hulga
-$$M_b(x_t) := \{x_k | x_k \in \bm{x}_e \cup \bm{x}_f, x_k \ne x_t \} ,$$
-millel tinglikustades on juhuslik suurus $X_t$ sõltumatu teistest juhuslikest suurustest ehk iga $x \in \{x_1,\ldots,x_{t-1},x_{t+1},\ldots x_T\} \setminus M_b(x_t)$ korral
-$$p(x_t,x|M_b(x_t)) = p(x_t|M_b(x_t))\ p(x|M_b(x_t)).$$
+% Järgmiseks leiame veel normaliseerimata variatsioonilised sõnumid
+% \begin{align*}
+%     \ln \vec{\nu}(x) &\propto \ln \vec{\eta}(x) := q(p)\ln f_{Ber}(x | p) = \ln f_{Ber}(x | \hat{p}) = x \ln \hat{p} + (1-x) \ln (1-\hat{p})\\
+%     \ln \cev{\nu}(x) &\propto \ln \cev{\eta}(x) := q(y)f_{\mathcal{N}}(y - x) = \ln f_{\mathcal{N}}(\hat{y} - x).
+% \end{align*}
+% Nüüd saame kirjutada
 
-\subsection{VMP näide}
+% $$q(x) = \frac{1}{Z} \vec{\eta}(x) \cev{\eta}(x),$$
+% kus $Z = \vec{\eta}(0) \cev{\eta}(0) + \vec{\eta}(1) \cev{\eta}(1)$. 
 
-Tutvustame üht mudelit, kus variatsioonilised jaotused ei ole kaaseksponentsiaaljaotuste (\emph{conjugate exponential distributions}) perest. See erineb kirjandusest, kus edastatavateks sõnumiteks on jaotuste piisavad statistikud ja naturaalparameetrid, ning on õpetlik eeltöö VMP algoritmiga mudelile, mida kirjeldatakse peatükis \ref{section:vmp_tmc}. Samuti kirjeldame alapeatüki lõpus, kuidas uuritavat mudelit implementeerida Julia teegis RxInfer.
+% Funktsionaali, mida RxInfer kasutab variatsiooniliste jaotuste headuse mõõtmiseks, nimetatakse Bethe vabaenergiaks üle faktorite $\mathcal{V}$ ja servade $\mathcal{E}$
+% \begin{equation}
+%     \label{eq:bethe}
+%     F[q,f] = - \sum_{a \in \mathcal{V}} {H[q_a(s_a)]} - \sum_{a \in \mathcal{V}}{\left< \ln f_a(s_a) \right>_{q_{a}(s_a)}} + \sum_{i \in \mathcal{E}}{H[q_i(s_i)]},
+% \end{equation}
+% kus variatsioonilist mõõtu $q_a(s_a)$ nimetatakse ühismarginaaliks üle tipu $f_a$. Mudeli (\ref{eq:em_model}) jaoks on $q_a(s_a)$ jaotused vastavalt
+% \begin{align*}
+%     q(p, x) &= \vec{\nu}(p) \ln f_{Ber}(x | p) \cev{\nu}(x) \text{ ja}\\
+%     q(x, y) &= \vec{\nu}(x) \ln f_{\mathcal{N}}(y - x)\cev{\nu}(y).
+% \end{align*}
 
-Vaatleme varjatud tunnusega mudelit, kus 
-\begin{equation}
-    \label{eq:em_model}
-     p(p,x,y) = f_{Ber}(x | p = \hat{p}) f_{\mathcal{N}}(y-x|y=\hat{y}),
-\end{equation}
-kus $f_{Ber}$ on Bernoulli jaotus teadaoleva kaaluga $\hat{p}$ ning $f_{\mathcal{N}}$ on standardne normaaljaotus teadaoleva emissiooniga $\hat{y}$ ja kujutatakse Forney stiilis faktorgraafil joonisel \ref{fig:em_model}.
+% Et $q(p) = \delta_{\hat{p}}(p)$ ja $q(y) = \delta_{\hat{y}}(y)$ on punktmassid, siis ühismarginaalid saab faktoriseerida kui $q(p, x) = q(p)q(x)$ ja $q(x, y) = q(x)q(y)$.
 
-\begin{figure}[!ht]
-\centering
-\resizebox{0.5\textwidth}{!}{%
-\begin{circuitikz}
-\tikzstyle{every node}=[font=\LARGE]
-\draw  (1.5,18) circle (1cm) node {\LARGE $\hat{p}$} ;
-\draw  (5.25,19) rectangle  node {\LARGE $Ber$} (7.25,17);
-\draw [->, >=Stealth] (2.5,18) -- (5.25,18)node[pos=0.5,below, fill=white]{p};
-\draw  (5.25,15) rectangle  node {\LARGE $\mathcal{N}$} (7.25,13);
-\draw [->, >=Stealth] (6.25,17) -- (6.25,15)node[pos=0.5,right, fill=white]{x};
-\draw  (11,14) circle (1cm) node {\LARGE $\hat{y}$} ;
-\draw [->, >=Stealth] (7.25,14) -- (10,14)node[pos=0.5,below, fill=white]{y};
-\end{circuitikz}
-}%
-\caption{Forney stiilis graaf mudelist (\ref{eq:em_model}).}
-\label{fig:em_model}
-\end{figure}
+% Nüüd saame kirjutada energia keskväärtuse mõlema faktori $f_{\mathcal{N}}, f_{Ber}$ jaoks kui
+% \begin{align*}
+%     -\sum_{x \in \{0,1\}} q(x)\ln f_{Ber}(x | \hat{p}) &= -q_x(0)\ln (1-\hat{p}) + q_x(1) \ln \hat{p}\\
+%     -\sum_{x \in \{0,1\}} q(x) \ln f_{\mathcal{N}}(\hat{y} - x) &=f =  -\frac{1}{2}\ln(2\pi) - q_x(0) \frac{(\hat{y})^2}{2} - q_x(1)\frac{(\hat{y}-1)^2}{2}.
+% \end{align*}
 
-Implementeerimaks VMP algoritmi, kirjutame välja variatsioonilised jaotused igale juhuslikule suurusele:
-\begin{align*}
-    q(p) &= \delta_{\hat{p}}(p)\\
-    q(y) &= \delta_{\hat{y}}(y)\\
-    q(x) &= p_{Ber}(x),
-\end{align*}
-kus $\delta_{\hat{p}}$ on Kroneckeri ja $\delta_{\hat{y}}$ Diraci delta funktsioon. Et eelduse kohaselt on $\hat{p}$ ja $\hat{y}$ fikseeritud, siis ainuke jaotus, mida VMP algoritm parandab on $q(x)$. 
-
-Järgmiseks leiame veel normaliseerimata variatsioonilised sõnumid
-\begin{align*}
-    \ln \vec{\nu}(x) &\propto \ln \vec{\eta}(x) := q(p)\ln f_{Ber}(x | p) = \ln f_{Ber}(x | \hat{p}) = x \ln \hat{p} + (1-x) \ln (1-\hat{p})\\
-    \ln \cev{\nu}(x) &\propto \ln \cev{\eta}(x) := q(y)f_{\mathcal{N}}(y - x) = \ln f_{\mathcal{N}}(\hat{y} - x).
-\end{align*}
-Nüüd saame kirjutada
-
-$$q(x) = \frac{1}{Z} \vec{\eta}(x) \cev{\eta}(x),$$
-kus $Z = \vec{\eta}(0) \cev{\eta}(0) + \vec{\eta}(1) \cev{\eta}(1)$. 
-
-Funktsionaali, mida RxInfer kasutab variatsiooniliste jaotuste headuse mõõtmiseks, nimetatakse Bethe vabaenergiaks üle faktorite $\mathcal{V}$ ja servade $\mathcal{E}$
-\begin{equation}
-    \label{eq:bethe}
-    F[q,f] = - \sum_{a \in \mathcal{V}} {H[q_a(s_a)]} - \sum_{a \in \mathcal{V}}{\left< \ln f_a(s_a) \right>_{q_{a}(s_a)}} + \sum_{i \in \mathcal{E}}{H[q_i(s_i)]},
-\end{equation}
-kus variatsioonilist mõõtu $q_a(s_a)$ nimetatakse ühismarginaaliks üle tipu $f_a$. Mudeli (\ref{eq:em_model}) jaoks on $q_a(s_a)$ jaotused vastavalt
-\begin{align*}
-    q(p, x) &= \vec{\nu}(p) \ln f_{Ber}(x | p) \cev{\nu}(x) \text{ ja}\\
-    q(x, y) &= \vec{\nu}(x) \ln f_{\mathcal{N}}(y - x)\cev{\nu}(y).
-\end{align*}
-
-Et $q(p) = \delta_{\hat{p}}(p)$ ja $q(y) = \delta_{\hat{y}}(y)$ on punktmassid, siis ühismarginaalid saab faktoriseerida kui $q(p, x) = q(p)q(x)$ ja $q(x, y) = q(x)q(y)$.
-
-Nüüd saame kirjutada energia keskväärtuse mõlema faktori $f_{\mathcal{N}}, f_{Ber}$ jaoks kui
-\begin{align*}
-    -\sum_{x \in \{0,1\}} q(x)\ln f_{Ber}(x | \hat{p}) &= -q_x(0)\ln (1-\hat{p}) + q_x(1) \ln \hat{p}\\
-    -\sum_{x \in \{0,1\}} q(x) \ln f_{\mathcal{N}}(\hat{y} - x) &=f =  -\frac{1}{2}\ln(2\pi) - q_x(0) \frac{(\hat{y})^2}{2} - q_x(1)\frac{(\hat{y}-1)^2}{2}.
-\end{align*}
-
-Et Bernoulli faktor on RxInferi teegis juba implementeeritud, piisab emissiooni faktori defineerimisest. Faktor ja mudel on Julias defineeritud
-\hyperref[section:lisa1]{esimeses lisas}. Et ainus muutus on jaotuses $q_x$, koondub protsess esimesel iteratsioonil.
+% Et Bernoulli faktor on RxInferi teegis juba implementeeritud, piisab emissiooni faktori defineerimisest. Faktor ja mudel on Julias defineeritud
+% \hyperref[section:lisa1]{esimeses lisas}. Et ainus muutus on jaotuses $q_x$, koondub protsess esimesel iteratsioonil.
 
 
