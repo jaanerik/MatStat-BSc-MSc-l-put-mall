@@ -1,11 +1,39 @@
 \section{Viterbi raja lähendamine}
 
-Nüüdseks oleme tutvunud paarikaupa Markovi ahelatel (\ref{eq:pairwise_markov}) Viterbi raja probleemiga (\ref{problem_def}) ja õigustanud iteratiivset lahendusviisi peatükkides \ref{sec:theory_variational_method}, \ref{sec:theory_approximating_marginals}, mille abil luua algoritm ülesande lähendi leidmiseks. Eelmises peatükis tutvustasime tuntud algoritme meie ülesande kontekstis ning nüüd implementeerime kaks algoritmi.
+Nüüdseks oleme tutvunud paarikaupa Markovi ahelatel \eqref{eq:pairwise_markov} Viterbi raja probleemiga \eqref{problem_def} ja õigustanud iteratiivset lahendusviisi peatükkides \ref{sec:theory_variational_method}, \ref{sec:theory_approximating_marginals}, mille abil luua algoritm ülesande lähendi leidmiseks. Eelmises peatükis tutvustasime tuntud algoritme meie ülesande kontekstis ning nüüd implementeerime kaks algoritmi.
 
 Mõlema puhul vaatleme diskreetset mittehomogeenset paarikaupa Markovi ahelat $\{U_t,X_t\}$ jaotusega $p$, mida kirjeldab \ref{eq:pairwise_markov}, kus algjaotus on $\pi$ ning üleminekumaatriks ajahetkel $t$ on $p_t$ ehk paaride $(u_{t-1},x_{t-1}),(u_t,x_t) \in \mathcal{U} \times \mathcal{X}$ korral on üleminekutõenäosus $p_t(u_t,x_t|u_{t-1},x_{t-1})$. Soov on leida jaotus $q$, mille abil leida Viterbi raja lähend $\bm{x}^*$. Esimeses algoritmis eeldame sõltumatust $q(\bm{u},\bm{x}) = q_u(\bm{u})q_x(\bm{x})$ ning teises $q(\bm{u},\bm{x}) = \prod_{t=1}^T q_t(u_t,x_t)$.
 
 
 \subsection{Belief propagation (BP)}\label{sec:BP}
+
+\begin{algorithm}[ht]
+\DontPrintSemicolon
+\caption{BP algoritmi pseudokood}\label{alg:bp}
+% \Require $n \geq 0$
+% \Ensure $y = x^n$
+$i  = 0$\\
+$q_u^{(i)},q_x^{(i)}  = \text{init}()$\;
+\While{$\DKL \left[  q_u^{(i)} \times q_x^{(i)} \| p\right]$ \text{not converged}}{
+\For{$t=1,\ldots,T$ \label{line:start1}}{
+    \eIf{$t = 1$}{
+    \textbf{for each} $u_t$ \textbf{do} $q_u^{(i)}(u_t) = \text{forwBack}(q_u^{(i)},t)$
+    }{
+    \textbf{for each} $u_t, u_{t-1}$ \textbf{do} $q_u^{(i)}(u_t), q_u^{(i)}(u_t,u_{t-1}) = \text{forwBack}(q_u^{(i)},t)$
+    }
+}
+ $\ln \pi_x^{(i)}(x_1) = \sum_{u_1 \in \mathcal{U}}  q_u^{(i)}(u_1) \ln p(u_1,x_1)$\\
+\For{$t=2,\ldots,T$}{
+\textbf{for each} $x_t,x_{t-1}$ \textbf{do} $\ln q_x^{(i)}(x_{t}|x_{t-1}) = \sum_{u_{t-1,t} \in \mathcal{U}^2}  q_u^{(i)}(u_{t-1}, u_t) \ln p_t(u_{t},x_t | u_{t-1},x_{t-1})$
+}
+\textbf{for each} $\bm{x}$ \textbf{do} $\Tilde{q}_x^{(i)}(\bm{x}) = \pi_x^{(i)}(x_1) \prod_{t=2}^T q_x^{(i)}(x_{t}|x_{t-1})$\\
+$Z_x^{(i)} = \sum_{\bm{x}} \Tilde{q}_x^{(i)}(\bm{x})$\\
+\textbf{for each} $\bm{x}$ \textbf{do} $q_x^{(i)}(\bm{x}) = \Tilde{q}_x^{(i)}(\bm{x}) /Z_x^{(i)} $ \\ \label{line:end1}
+$q_u^{(i+1)} =$ \Repeat{ \ref{line:start1}-\ref{line:end1} \Swapping $q_u^{(i)}$ \Ffor $q_x^{(i)}$ }\\
+$i++$\\
+}
+\Return{$\text{Viterbi}(q_x^{(i)})$}
+\end{algorithm}
 
 % {Tuleme aga enne veel tagasi peatükis \ref{sec:theory_variational_method} tõstatatud teema juurde.} \textcolor{red}{See lause kõlab nagu poliitiku sõnavõtt}. Kui leiduvad sellised $u_t,x_t,u_{t-1},x_{t-1}$, et $p(u_t,x_t|u_{t-1},x_{t-1}) > 0$ ja $q(x_t|x_{t-1}) q(u_t|u_{t-1})>0$, siis KL kaugus ja funktsionaal ELBO (\ref{eq:elbo}) ei ole lõplikud ja me peame iteratsioonil optimiseeritava variatsioonilise mõõdu puhul uuendama $q_x(x_t|x_{t-1}) = 0$ või $q_u(u_t|u_{t-1})=0$.
 
@@ -18,21 +46,22 @@ Mõlema puhul vaatleme diskreetset mittehomogeenset paarikaupa Markovi ahelat $\
 
 Me oleme näidanud, milline on tõenäosusmõõdu 
 $$q_u \times q_x: \mathcal{U}^T \times \mathcal{X}^T \ni (\bm{u},\bm{x}) \mapsto q_u(\bm{u}) q_x(\bm{x}) \in [0, \infty)$$ 
-puhul puhul iteratiivse algoritmi samm (\ref{eq:general_update}) minimiseerimaks tagurpidist KL kaugust $ \DKL[q_u \times q_x \| p]$. Näitame, kuidas käib sellise algoritmi implementeerimine, kui $p$ on mittehomogeenne diskreetne paarikaupa Markovi ahel.
+puhul iteratiivse algoritmi samm \eqref{eq:general_update} minimiseerimaks KL kaugust $ \DKL[q_u \times q_x \| p]$. Näitame, kuidas käib sellise algoritmi implementeerimine, kui $p$ on mittehomogeenne diskreetne paarikaupa Markovi ahel.
 
-Vaatleme tõenäosusmõõtu $q_u^{(0)}$, kus iga vektori $\bm{u} \in \mathcal{U}^T$ korral kehtib (\ref{eq:almost_markovian}) ehk
+Vaatleme tõenäosusmõõtu $q_u^{(0)}$, kus iga vektori $\bm{u} \in \mathcal{U}^T$ korral kehtib \eqref{eq:almost_markovian} ehk
 \begin{equation*}
     q(\bm{u})^{(0)} = \pi_u^{(0)}(u_1) \prod_{t=2}^T \Tilde{q}_t^{(0)}(u_t|u_{t-1}),
 \end{equation*}
 kusjuures mõõt $\Tilde{q}_t^{(0)}(\cdot|u_{t-1})$ ei pruugi olla tõenäosusmõõt. Aga meenutame, et me oskame leida $q_u^{(0)}(u_t)$ iga $t$ korral ja $q_u^{(0)}(u_{t-1},u_t)$ iga $t>2$ korral \eqref{eq:fb1} ja \eqref{eq:fb2} abil.
 % \textcolor{red}{Siin peaks ikka natuke täpsemalt lahti seletama, mis on Markovi ahel $q$ (et $q(\bm{u})=q(u_1)q(u_2|u_1)\cdots q(u_T|u_{T-1}$) jne.)}
 % \\\\
-Kirjutame variatsioonilise Bayesi iteratsiooni vastavalt tulemusele (\ref{eq:general_update}) ja saame
+Kirjutame variatsioonilise Bayesi iteratsiooni vastavalt tulemusele \eqref{eq:general_update} ja saame
 % \textcolor{red}{Siin $q(x)$ pole tõenäosusmõõt, $q(u)$ jällegi on. Võibolla pole siinkohal $q(x)$-i defineerida vaja. Või tähistada kuidagi teisiti. Või lisada, et pole tõenäosusmõõt.}
-\begin{align*}
+\begin{align}
+    \label{eq:bp_update}
     \ln q_x^{(0)}(\bm{x}) &= \sum_{\bm{u}} \ln p(\bm{u},\bm{x}) q_u^{(0)}(\bm{u}) + \ln Z_x^{(0)}
-\end{align*}
-ning näitame, et tõenäosusmõõt $q_x^{(0)}$ on võimalik samuti esitada sarnaselt mõõdule $q_u$ kujul (\ref{eq:almost_markovian}). Uurime eelmise avaldise normaliseerimata paremat poolt
+\end{align}
+ning näitame, et tõenäosusmõõt $q_x^{(0)}$ on võimalik samuti esitada sarnaselt mõõdule $q_u$ kujul \eqref{eq:almost_markovian}. Uurime eelmise avaldise normaliseerimata paremat poolt
 \begin{align*}
     \sum_{\bm{u}} \ln p(\bm{u},\bm{x}) q_u^{(0)}(\bm{u}) &=  \sum_{\bm{u}} \ln \left( \pi(x_1, u_1) \prod_{t=2}^T p_t(x_t,u_t | x_{t-1}, u_{t-1}) \right) q_u^{(0)}(\bm{u}) \\
     &= \sum_{u_1} \ln \pi(x_1, u_1) q_u^{(0)}(u_1)  + \sum_{t=2}^T \sum_{\bm{u}_{t-1,t}} \ln p_t(u_t,x_t | u_{t-1}, x_{t-1}) q_u^{(0)}(u_{t-1},u_{t}).
@@ -42,16 +71,27 @@ Defineerime iga $t$ ning iga $x_t \in \mathcal{X}$ korral $\ln \pi_x^{(0)}(x_1)$
 $$\ln \pi_x^{(0)}(x_1) := \sum_{u_1 \in \mathcal{U}}  q_u^{(0)}(u_1) \ln p(u_1,x_1)$$
 ning iga $t > 1$ ja iga $(x_{t-1}, x_t) \in \mathcal{X}^2$ jaoks
 $$\ln q_x^{(0)}(x_{t}|x_{t-1}) := \sum_{u_{t-1,t} \in \mathcal{U}^2}  q_u^{(0)}(u_{t-1}, u_t) \ln p_t(u_{t},x_t | u_{t-1},x_{t-1}).$$ 
+
+Oleme saanud, et 
+$$q_x^{(0)}(\bm{x}) \propto \pi_x^{(0)}(x_1) \prod_{t=2}^{T}{q_x^{(0)}(x_{t}|x_{t-1})}.$$
+Avaldise parem pool ei ole üldiselt tõenäosusmõõt, aga eelduse kohaselt $\supp q_u \times q_x \subseteq \supp p$, seega peatüki \ref{sec:theory_variational_method} põhjal ei ole see nullmõõt. Defineerime
+$$\Tilde{q}_x^{(0)}(\bm{x}) = \pi_x^{(0)}(x_1) \prod_{t=2}^{T}{q_x^{(0)}(x_{t}|x_{t-1})}.$$
+Järgmisena keskendume mõõdu $\Tilde{q}_x^{(0)}$ normaliseerimisele ehk leiame avaldises \eqref{eq:bp_update} suuruse $Z_x^{(0)}$. Praktiline on leida suurus $Z_x^{(0)}$ mõõdu $\Tilde{q}_x^{(0)}$ edasi-tagasi algoritmi $\Tilde{\alpha}, \Tilde{\beta}$ komponentide abil, sest nii normaliseerimine kui ka $q_x^{(0)}(x_t), q_x^{(0)}(x_{t-1},x_t)$ marginaalide leidmine on kergesti tehtavad nende komponentide abil. On lihtne näha, et saame kirjutada tõenäosusmõõdu $q_x^{(0)}$ edasi-tagasi komponendid kui
+$$\alpha_t(x_t) = \Tilde{\alpha}_t(x_t)/Z_x^{(0)}.$$ Leiame mõõdu $\Tilde{q}_x^{(0)}$ jaoks iga $t \in \{1,\ldots,T\}$ jaoks $\Tilde{\alpha}_t, \Tilde{\beta}_t$ ja saame näiteks $t=1$ korral
+\begin{equation}
+    \label{eq:norm}
+    Z_x^{(0)} = \sum_{x_t} \Tilde{\alpha}_1(x_1) \Tilde{\beta}_1(x_1).
+\end{equation}
+
 Saame tõenäosusmõõdu
 \begin{equation}
     \label{eq:update_is_still_markov}
-    q_x^{(0)}(\bm{x}) = \frac{1}{Z_x^{(0)}}\pi_x^{(0)}(x_1)\prod_{t=2}^T q_x^{(0)}(x_t | x_{t-1}),
+    q_x^{(0)}(\bm{x}) = \frac{1}{Z_x^{(0)}}\pi_x^{(0)}(x_1)\prod_{t=2}^T q_x^{(0)}(x_t | x_{t-1}).
 \end{equation}
-kus $Z_x$ on kergesti leitav (\ref{eq:almost_markovian_normalisation}) abil.
 % \textcolor{red}{Kas edasi-tagasi valemid   \eqref{eq:fb1} ja \eqref{eq:fb2} (need tuleb sul muidugi korda teha)  kehtivad ka siis, kui $q(x)$ pole  tõenäosusmõõt? Argumenteeri.}
 % \\\\
 
-Nüüd iteratsiooni teisel sammul leiame
+Nüüd iteratsiooni teises pooles leiame
 % \textcolor{red}{Iteratsioonil on sammud, mitte osad}
 \begin{align*}
     q^{(1)}(\bm{u}) = \frac{1}{Z_u^{(1)}}\pi_u^{(1)}(u_1) \prod_{t=2}^n q_u^{(1)}(u_t | u_{t-1}),
@@ -61,9 +101,11 @@ kus
     \ln \pi_u^{(1)}(u_1) :&= \sum_{x_1 \in \mathcal{X}}  \pi_x^{(0)}(x_1) \ln \pi(x_1,u_1) \\
     \ln q_u^{(1)}(u_{t}|u_{t-1}) :&= \sum_{\bm{x}_{t-1,t} \in \mathcal{X}^2}  q_x^{(0)}(x_{t-1}, x_t) \ln p_t(x_{t},u_t | x_{t-1},u_{t-1})
 \end{align*}
-ja $Z_u^{(1)}$ on (\ref{eq:almost_markovian_normalisation}) abil leitav normaliseeriv konstant.
+ja $Z_u^{(1)}$ on mõõdu
+$$\pi_u^{(1)}(u_1) \prod_{t=2}^n q_u^{(1)}(u_t | u_{t-1})$$
+edasi tagasi komponentide abil leitav normaliseeriv konstant analoogselt avaldisele \eqref{eq:norm}.
 
-Seda saime teha analoogselt, sest kui $q_u^{(0)}$ on kujul (\ref{eq:almost_markovian}), siis on ka (\ref{eq:update_is_still_markov}) põhjal $q_x^{(0)}$ ja $q_u^{(1)}$ Markovi ahelad jne. 
+Iteratsiooni teist poolt saime teha analoogselt, sest kui $q_u^{(0)}$ on kujul \eqref{eq:almost_markovian}, siis on ka \eqref{eq:update_is_still_markov} põhjal $q_x^{(0)}$ ja $q_u^{(1)}$ Markovi ahelad jne. 
 % \textcolor{red}{Tähistused: kas $q_x(x)$ ja $q(x)$ on sama? kui ja, siis miks paralleelsed tähistused? Võibolla oleks parem iteratsiooni sammude indekseid $q^{(i)}$ kogu aeg juures hoida, et oleks selge. Ja kui $q_x$ pole tõenäosusmõõt (pole ju!), kas ta siis saab olla Markovi mõõt?}
 % \textcolor{red}{Kas see $q$ valemis (\ref{eq:is_markovian}) on $q(\bm{x}) = r(x_1)\prod_{t=2}^T r(x_t | x_{t-1})$? Kui tõenäosusmõõt on sellisel kujul, siis ta on Markovi mõõt, seda pole vaja tõestada. Peale selle on sul argumendid vales järjekorras -- defineerid $q(x)$ ja siis väidad, et edasi-tagasi valemitega saad arvutada $q(x_t)$ jne. Aga edasi-tagasi valemid juba eeldavad Markovi omadust, sest muidu nad ei kehti. 
 % \\\\
@@ -73,7 +115,7 @@ Seega sobivatel algväärtustustel, kus initisialiseerime $q_u^{(0)}$ Markovi ah
 
 Peatükis \ref{sec:theory_variational_method} kirjeldatud ja siin peatükis implementeeritud iteratiivne algoritm tagab iteratsioonidel KL kaugust minimiseeriva korrutismõõdu $q_u \times q_x$. 
 
-Viterbi raja lähendi ehk lähendi ülesandele (\ref{problem_def}) anname kui Viterbi raja üle leitud mõõdu $q_x$
+Viterbi raja lähendi ehk lähendi ülesandele \eqref{problem_def} anname kui Viterbi raja üle leitud mõõdu $q_x$
 $$\argmax_{\bm{x}} q_x(\bm{x}).$$
 
 % \textcolor{red}{Kas $q$ või $q_x$? Järbmine lause on väga segane -- mis on eksperiment? Kes mida loodab? Kas on mingi teoreetiline argument/põhjendus, et mõõtu $q_x$ (see on VB iteratsiooni lõpp-produkt) maksimiseeriv rada on Viterbi rada? Ega ikka pole küll. } 
@@ -83,32 +125,89 @@ $$ \argmax_{\bm{x}} q_x(\bm{x}) = \argmax_{\bm{x}} \sum_{\bm{u}} p(\bm{u},\bm{x}
 
 \subsection{Variational Message Passing (VMP)}\label{sec:VMP}
 
-Vaatleme mittehomogeenset diskreetset paarikaupa Markovi ahelat $\{U_t,X_t\}_t$ jaotusega $p$ (\ref{eq:pairwise_markov}). 
+
+\begin{algorithm}[ht]
+\DontPrintSemicolon
+\caption{VMP algoritmi pseudokood}\label{alg:bp}
+% \Require $n \geq 0$
+% \Ensure $y = x^n$
+$i  = 0$\\
+$q_1^{(i)}, \ldots, q_T^{(i)}  = \text{init}()$\;
+\While{$\DKL \left[  q_1^{(i)} \times \ldots \times q_T^{(i)} \| p\right]$ \text{not converged}}{
+$i++$\;
+\For{$t=1,\ldots,T$ \label{line:start}}{
+   \uIf{t=1}{
+        \textbf{for each} $u_t,x_t$ $\ln q_t^{*(i)}  \textbf{do}(u_t,x_t)=\sum_{u_{t+1},x_{t+1}}\ln p_{t+1}(u_{t+1},x_{t+1}|u_t,x_t)q_{t+1}^{(i-1)}(u_{t+1},x_{t+1})$\;
+    }
+    \uElseIf{t=T}{
+        \textbf{for each} $u_t,x_t$  \textbf{do} $\ln q_t^*(u_t,x_t)=  \sum_{u_{t-1},x_{t-1}}\ln p_t(u_{t},x _t|u_{t-1}, x_{t-1})q_{t-1}^{(i)}(u_{t-1}, x_{t-1})$ \;
+    }
+    \Else{
+    \textbf{for each} $u_t,x_t$  \textbf{do} $\ln q_t^*(u_t,x_t) =\sum_{u_{t+1},x_{t+1}}\ln p_{t+1}(u_{t+1},x_{t+1}|u_t,x_t)q_{t+1}^{(i-1)}(u_{t+1},x_{t+1}) + \sum_{u_{t-1},x_{t-1}}\ln p_t(u_{t},x _t|u_{t-1}, x_{t-1})q_{t-1}^{(i)}(u_{t-1}, x_{t-1})$
+    }
+    $Z_t^{(i)} := \sum_{u_t,x_t} q_t^{*(i)}(u_t,x_t)$\;
+    $q_t(u_t,x_t) = q_t^*(u_t,x_t)/Z_t^{(i)}$
+    
+} \\ \label{line:end}
+}
+\For{$t=1,\ldots,T$}{
+$x^*_t=\argmax_{x_t} \sum_{u_t} q_t(u_t,x_t)$
+}
+\Return{$\bm{x}^{*}$}
+\end{algorithm}
+
+Vaatleme mittehomogeenset diskreetset paarikaupa Markovi ahelat $\{U_t,X_t\}_t$ jaotusega $p$ \eqref{eq:pairwise_markov}. 
 % Juhuslikule suurusele vastava variatsioonilise mõõdu uuendamiseks on algoritmis tarvis vaid Markovi ümbruses olevate juhuslike suuruste variatsioonilisi jaotusi. See on klassikalisem näide ICM-ist e \emph{iterated conditional mode}'ist, kusjuures on võimalik algoritmis ka tööd paralleliseerida. \textcolor{red}{Kahest eelmisest lausest ei saa aru.}
 
 % \textcolor{red}{Kas  $q(\bm{u}, \bm{x})$  on sama, mis  $Q(\bm{u}, \bm{x})$ peatükis 1? Et nüüd vaatad olukorda, kus $Q= \prod_{t=1}^T{Q(u_t, x_t)}$. Kas $w_t=(u_t,x_t)$? Kas enne polnud mitte $z_t$? Kas on vaja tuua veel uusi tähistusi? Saan aru, et $Q(w)$ on kogu aeg sama mõõt ega sõltu $t$-st. Või sõltub, st $Q_t(w_t)$? See on väga oluline erinevus, sest kui $Q$ on iga $t$ korral sama, on Viterbi lähend konstantne.}
-Eeldame, et $q(\bm{u}, \bm{x}) = \prod_{t=1}^T{q_t(u_t, x_t)}$, kus iga $q_t(u_t, x_t)$ on tõenäosusmõõt. Fikseerime nüüd $t$. Meid huvitav jaotus on $q_t(u_t, x_t)$ ning jaotuse
+Eeldame, et $q(\bm{u}, \bm{x}) = \prod_{t=1}^T{q_t(u_t, x_t)}$, kus iga $t$ korral on $q_t(u_t, x_t)$ tõenäosusmõõt. Fikseerime nüüd $t$. Meid huvitav jaotus on $q_t(u_t, x_t)$ ning jaotuse
 $$q_{\setminus t} = q_1 \times \ldots \times q_{t-1} \times q_{t+1} \times \ldots \times q_T$$
-loeme fikseerituks. Sellisel juhul on KL kauguse (\ref{eq:kl_def}) minimiseerimine ekvivalentne suuruse $\DKL^{t}[q_t \times q_{\setminus t} \| p]$ minimiseerimisega, kus
-\begin{align*}
-    \DKL^{t}[q_t \times q_{\setminus t} \| p] :=& \sum_{\substack{u_{t+1}, x_{t+1}\\ u_{t}, x_t}} q_t(u_{t},x_t) q_{t+1}(u_{t+1},x_{t+1}) \Big(\ln \frac{p_{t+1}(u_{t+1},x_{t+1} \ |\ u_{t}, x_t )}{q_t(u_{t},x_t)q_{t+1}(u_{t+1}, x_{t+1})}  \Big)\\
-    +&\sum_{\substack{u_{t}, x_t \\ u_{t-1}, x_{t-1}}} q_{t-1}(u_{t-1},x_{t-1}) q_t(u_{t},x_t) \Big(\ln \frac{p_t(u_{t}, x_t\ |\ u_{t-1}, x_{t-1})}{q_{t-1}(u_{t-1},x_{t-1})q_t(u_{t},x_t)}\Big),
-\end{align*}
-kusjuures $\DKL^{1},\DKL^{T}$ korral vaatleme vastavalt vaid teist ja esimest liidetavat. Kaks probleemi on ekvivalentsed, sest me saame muuhulgas $p$ Markovi omadust kasutades kirjutada KL kauguse (\ref{eq:kl_def}) ülejäänud liidetavad konstandina $c$, kus
-$$\DKL[q_t \times q_{\setminus t} \| p] = \DKL^t[q_t \times q_{\setminus t} \| p] + c$$
-ning optimaalne $q_t$ on nii $\DKL[q_t \times q_{\setminus t} \| p]$ kui $\DKL^t[q_t \times q_{\setminus t} \| p]$ jaoks sama.
+loeme fikseerituks. 
+% Sellisel juhul on KL kauguse \eqref{eq:kl_def} minimiseerimine ekvivalentne suuruse $\DKL^{t}[q_t \times q_{\setminus t} \| p]$ minimiseerimisega, kus $t \in \{2,\ldots,T-1\}$ korral
+% \begin{align*}
+%     \DKL^{t}[q_t \times q_{\setminus t} \| p] :=& \sum_{\substack{u_{t+1}, x_{t+1}\\ u_{t}, x_t}} q_t(u_{t},x_t) q_{t+1}(u_{t+1},x_{t+1}) \Big(\ln \frac{q_t(u_{t},x_t)q_{t+1}(u_{t+1}, x_{t+1})}{p_{t+1}(u_{t+1},x_{t+1} \ |\ u_{t}, x_t )}  \Big)\\
+%     +&\sum_{\substack{u_{t}, x_t \\ u_{t-1}, x_{t-1}}} q_{t-1}(u_{t-1},x_{t-1}) q_t(u_{t},x_t) \Big(\ln \frac{q_{t-1}(u_{t-1},x_{t-1})q_t(u_{t},x_t)}{p_t(u_{t}, x_t\ |\ u_{t-1}, x_{t-1})}\Big)\\
+%     +& C,
+% \end{align*}
+% kus 
+% $$C = \sum_{\bm{u}_{1:t-1}, \bm{x}_{1:t-1}}  \prod_{j=1}^{t-1} q_j(u_j,x_j) \ln \left(\pi(u_1,x_1) \prod_{k=2}^{t-1} p_k(u_k,x_k|u_{k-1},x_{k-1}) \right)$$
+% ning $\DKL^{1},\DKL^{T}$ korral vaatleme vastavalt vaid teist ja esimest liidetavat. Kaks probleemi on ekvivalentsed, sest me saame muuhulgas $p$ Markovi omadust kasutades kirjutada KL kauguse \eqref{eq:kl_def} ülejäänud liidetavad konstandina $c$, kus
+% $$\DKL[q_t \times q_{\setminus t} \| p] = \DKL^t[q_t \times q_{\setminus t} \| p] + c$$
+% ning optimaalne $q_t$ on nii $\DKL[q_t \times q_{\setminus t} \| p]$ kui $\DKL^t[q_t \times q_{\setminus t} \| p]$ jaoks sama.
 
-Saame kirjutada iteratsioonisammu (\ref{eq:vmp_update}) kui 
+% \begin{align*}
+%     &\left< \ln p(u,x)\right>_{q}\\
+%     &= \left< \ln p(u_1,x_1)\right>_{q_1}\\
+%     &+ \left< \ln p(u_2,x_2|u_1,x_1)\right>_{q_{1,2}}\\
+%     &+ \left< \ln p(u_3,x_3|u_2,x_2)\right>_{q_{2,3}}\\
+%     &\ldots
+% \end{align*}
+Meenutame, et normaliseerimata iteratsioonisamm \eqref{eq:vmp_update} on $t\in \{2,\ldots,T-1\}$ korral
+\begin{align*}
+    \ln \Tilde{q}_t(u_t,x_t) &= \sum_{\bm{u}_{\setminus t}, \bm{x}_{\setminus t}} q_{\setminus t}(\bm{u}_{\setminus t}, \bm{x}_{\setminus t}) \ln p(\bm{u}, \bm{x}) \\
+    &= \sum_{u_1,x_1} q_{1}(u_1,x_1) \ln \pi(u_1,x_1) \\
+    &+ \sum_{\substack{u_{2}, x_2 \\ u_{1}, x_{1}}} q_{1}(u_{1},x_{1})q_2(u_2,x_2) \ln p_2 (u_2,x_2|u_{1},x_{1})\\
+    &+\ldots\\
+    &+ \sum_{u_{t-1},x_{t-1}}q_{t-1}(u_{t-1}, x_{t-1}) \ln p(u_{t},x _t|u_{t-1}, x_{t-1})\\
+    &+ \sum_{u_{t+1},x_{t+1}} q_{t+1}(u_{t+1},x_{t+1}) \ln p_{t+1}(u_{t+1},x_{t+1}|u_t,x_t)\\
+    &+ \ldots\\
+    &+ \sum_{\substack{u_{T}, x_T \\ u_{T-1}, x_{T-1}}} q_{T-1}(u_{T-1},x_{T-1})q_T(u_T,x_T) \ln p_T(u_T,x_T|u_{T-1},x_{T-1}).
+\end{align*}
+Saame defineerida
+\begin{align}
+\label{eq:not_normalised_vmp1}
+\ln q_t^*(u_t,x_t)&:= \sum_{u_{t-1},x_{t-1}}q_{t-1}(u_{t-1}, x_{t-1})\ln p(u_{t},x_t|u_{t-1}, x_{t-1}) \\
+\label{eq:not_normalised_vmp2}
+&+ \sum_{u_{t+1},x_{t+1}} q_{t+1}(u_{t+1},x_{t+1})\ln p_{t+1}(u_{t+1},x_{t+1}|u_t,x_t),
+\end{align}
+kusjuures $\Tilde{q}_t(u_t,x_t) \propto q_t^*(u_t,x_t)$, seega
+$$\frac{ q_t^*(u_t,x_t)}{\sum_{u_t,x_t} q_t^*(u_t,x_t)} = \frac{ \Tilde{q}_t(u_t,x_t)}{\sum_{u_t,x_t} \Tilde{q}_t(u_t,x_t)}.$$
+
+Kui $t=1$ või $t=T$, siis vaatleme funktsiooni $\ln q_t^*$ defineerides vastavalt vaid teist \eqref{eq:not_normalised_vmp2} või esimest \eqref{eq:not_normalised_vmp1} liidetavat. Saame iteratsioonisammuks
 \begin{equation}
     \label{eq:vmp_implement}
-    \Bar{q}_t(u_t,x_t) = \frac{ q_t^*(u_t,x_t)}{Z_t},
+    \Bar{q}_t(u_t,x_t) = \frac{ q_t^*(u_t,x_t)}{Z_t}, \; Z_t := \sum_{u_t,x_t} q_t^*(u_t,x_t).
 \end{equation}
-kus
-\begin{align*}
-    \ln q_t^*(u_t,x_t)&=\sum_{u_{t+1},x_{t+1}}\ln p_{t+1}(u_{t+1},x_{t+1}|u_t,x_t)q_{t+1}(u_{t+1},x_{t+1}) \\
-    &+ \sum_{u_{t-1},x_{t-1}}\ln p(u_{t},x _t|u_{t-1}, x_{t-1})q_{t-1}(u_{t-1}, x_{t-1})\\
-    Z_t :&= \sum_{u_t,x_t} q_t^*(u_t,x_t)
-\end{align*}
 
 
 
@@ -121,7 +220,7 @@ kus
 % Äkki see osa sobiks ka esimesse peatükki? Edasine "message passing" jne on lihtsa asja üleliia keerulisemaks ajamine ja seda pole vaja. Lõpuks, kui algoritm on koondunud/töö lõpetanud, on $n$ mõõtu 
 % $q_1(w_1),\ldots,q_n(w_n)$ ja siis on lihtne iga $t$ korral $u_t$ välja summeerida ja üle $x_t$ maksimiseerida. Simulatsioonidega võrrelda selle algoritmi käitumist eelmisega.}
 
-Algoritmi implementeerides saame initsialiseerida mõõdud $q_t^{(0)}$ ühtlase jaotusena üle tähestiku $\mathcal{U} \times \mathcal{X}$ iga $t$ korral. Eksperimentaalosas saame muuhulgas uurida, kas algoritm on erinevate algväärtustuste osas tundlik. Iteratsioonil $i$ me uuendame (\ref{eq:vmp_implement}) abil järjestikku $t = 1, \ldots, T$ korral mõõtu $q_t^{(i)}(u_t,x_t) = \Bar{q}_t(u_t, x_t)$. Tasub tähele panna, et me kasutame $q_t^{(i)}$ leidmiseks mõõte $q_{t-1}^{(i)}$ ja $q_{t+1}^{(i-1)}$.
+Algoritmi implementeerides saame initsialiseerida mõõdud $q_t^{(0)}$ ühtlase jaotusena üle tähestiku $\mathcal{U} \times \mathcal{X}$ iga $t$ korral. Iteratsioonil $i$ me uuendame \eqref{eq:vmp_implement} abil järjestikku $t = 1, \ldots, T$ korral mõõtu $q_t^{(i)}(u_t,x_t) = \Bar{q}_t(u_t, x_t)$. Tasub tähele panna, et me kasutame $q_t^{(i)}$ leidmiseks mõõte $q_{t-1}^{(i)}$ ja $q_{t+1}^{(i-1)}$.
 
 Kui algoritm on meie hinnangul koondunud, anname Viterbi raja lähendi pärast $N$ iteratsiooni mõõtude $q_1^{(N)},\ldots,q_T^{(N)}$ jaoks kui $(x^*_t)_{t=1}^T$, kus
 $$x^*_t = \argmax_{x_t} \sum_{u_t} q_t^{(N)}(u_t, x_t)$$

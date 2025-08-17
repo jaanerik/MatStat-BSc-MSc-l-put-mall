@@ -4,7 +4,9 @@
 
 \usepackage{setspace}
 \setstretch{1.5}
-\usepackage{amsmath,amsthm,amsfonts}
+% \usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue,filecolor=black]{hyperref}
@@ -32,18 +34,36 @@
 \usepackage{minted}
 \usepackage[estonian]{babel} % Eestikeelne lõputöö
 \usepackage{polyglossia}
+\usepackage{etoolbox}
+% \usepackage[fleqn]{amsmath}
+% \usepackage{algorithm}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\SetKwRepeat{Do}{do}{while}%
+\SetKw{Repeat}{repeat}
+\SetKw{Ffor}{for}
+\SetKw{Using}{using}
+\SetKw{Swapping}{swapping}
+\usepackage{algpseudocode}
+
 \newtheorem{theorem}{Teoreem}
-\newtheorem{corollary}{Järeldus}[theorem]
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Järeldus}
 \theoremstyle{definition}
 \newtheorem{definition}{Definitsioon}
+% \patchcmd{\proofname}{Proof}{Tõestus}{}{}
+% \renewcommand{\proofname}{\bfseries Tõestus.}
 
 \newcommand{\bla}{\textcolor{red}{BLA BLA BLA...}} 
 \newcommand{\cev}[1]{\reflectbox{\ensuremath{\vec{\reflectbox{\ensuremath{#1}}}}}}
 \newcommand\myeq{\stackrel{\mathclap{\normalfont\mbox{\small{*}}}}{=}}
 \newcommand{\BibResources}{references}
 \newcommand{\DKL}{D_{\mathrm{KL}}}
+\newcommand{\lIfElse}[3]{\lIf{#1}{#2 \textbf{else}~#3}}
+\renewcommand{\Re}{\mathbb{R}}
+\newcommand{\Nat}{\mathbb{N}}
 
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclareMathOperator*{\esssup}{ess\,sup}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator{\diag}{diag}
@@ -58,7 +78,10 @@
 \begin{document}
 
 \renewcommand{\figurename}{Joonis}
+\makeatletter
+% \renewcommand{\ALG@name}{Algoritm}
 \renewcommand{\tablename}{Tabel}
+\def\proofname{\emph{Tõestus}}
 
 \include{00_titlepage}
 

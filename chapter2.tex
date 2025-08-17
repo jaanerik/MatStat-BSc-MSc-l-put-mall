@@ -51,16 +51,16 @@ Analoogselt saame kirjutada ühismarginaali $q_x(x_{t-1},x_t)$ kui
     &= \alpha_{t-1}(x_t) q_{t}(x_t|x_{t-1}) \beta_t(x_t).
 \end{align}
 
-Uurime juhtu, kus mõõt $s_x$ on samuti kujul (\ref{eq:almost_markovian}), ehk
-$$s_x(\bm{x}) = \pi_s(x_1) \prod_{t=2}^T s_t(x_t|x_{t-1}),\; \sum_{\bm{x}}s_x(\bm{x}) > 0$$
-kuid ei pruugi olla tõenäosusmõõt. Sel juhul on lihtne see mõõt normaliseerida. Edasi-tagasi algoritmi abil leiame iga $t \in \{1,\ldots,T\}$ jaoks $\alpha_t, \beta_t$ ja normaliseerime suvalise $t$ korral
-$$Z = \sum_{x_t} \alpha_t(x_t)\beta_t(x_t).$$
+% Uurime juhtu, kus mõõt $s_x$ on samuti kujul (\ref{eq:almost_markovian}), ehk
+% $$s_x(\bm{x}) = \pi_s(x_1) \prod_{t=2}^T s_t(x_t|x_{t-1}),\; \sum_{\bm{x}}s_x(\bm{x}) > 0$$
+% kuid ei pruugi olla tõenäosusmõõt. Sel juhul on lihtne see mõõt normaliseerida. Edasi-tagasi algoritmi abil leiame iga $t \in \{1,\ldots,T\}$ jaoks $\alpha_t, \beta_t$ ja normaliseerime suvalise $t$ korral
+% $$Z = \sum_{x_t} \alpha_t(x_t)\beta_t(x_t).$$
 
-Saame kirjutada vastava tõenäosusmõõdu, kus 
-\begin{equation}
-    \label{eq:almost_markovian_normalisation}
-    \Tilde{s}_x = \pi_{\Tilde{s}}(x_1) \prod_{t=2}^T s_t(x_t|x_{t-1}),\ \pi_{\Tilde{s}}(x_1) = \frac{\pi_{s}(x_1)}{\sum_{x_1}\alpha_1(x_1)\beta_1(x_1)}.
-\end{equation}
+% Saame kirjutada vastava tõenäosusmõõdu, kus 
+% \begin{equation}
+%     \label{eq:almost_markovian_normalisation}
+%     \Tilde{s}_x = \pi_{\Tilde{s}}(x_1) \prod_{t=2}^T s_t(x_t|x_{t-1}),\ \pi_{\Tilde{s}}(x_1) = \frac{\pi_{s}(x_1)}{\sum_{x_1}\alpha_1(x_1)\beta_1(x_1)}.
+% \end{equation}
 
 % \textcolor{red}{Kas $\alpha(z_t)$   on defineeritud kui $q(z_t|y_{1:t})$, $q(z_t,y_{1:t})$ või hoopis $q(z_t|{\bf y})$?
 % Defineeri $\alpha(z_t)$ kõigepealt (iga $t$ korral) ja siis näita rekursioon. Preagu on nii, et $\alpha(z_1)$ on defineeritud ühte moodi, kuid rekursioon räägib midagi muud. Tavaliselt on $\alpha(z_t)$ defineeritud kui $\alpha(z_t,y_{1:t})$ ja kui sul on midagi muud, siis tee see lugejale selgeks. Sama $\beta$-kohta --- defineeri kõigepealt ära ja siis esita rekursioon. Tavaliselt on $\beta(z_t)$ defineeritud kui $\beta(z_t)=q(y_{t+1:T}|z_t)$ (eeldusel, et $(Z,Y)$ on HMM) ja kui sinu beta on midagi muud, siis tee see lugejale selgeks.}
@@ -91,7 +91,7 @@ Saame kirjutada vastava tõenäosusmõõdu, kus
 
 \subsection{Viterbi algoritm}
 
-Vaatleme tõenäosusmõõtu $q_x$ kujul (\ref{eq:almost_markovian}), kus
+Vaatleme tõenäosusmõõtu $q_x$ kujul \eqref{eq:almost_markovian}, kus
 $$
 q_x(\bm{x}) := \pi_x(x_1) \prod_{t=2}^T q_{t}(x_{t} | x_{t-1}),$$
 sooviga leida Viterbi rada $\bm{x}^* \in \mathcal{X}^T$, kus $\bm{x}^* = \argmax_{\bm{x}} q_x(\bm{x})$.
